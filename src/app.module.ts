@@ -1,11 +1,31 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+
+import { configLoader } from '../config-loader';
+import { envSchema } from '../env-schema';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { CompanyModule } from './company/company.module';
+import createDataSource from '../db/data-source';
 
 @Module({
-  imports: [UserModule, CompanyModule],
+  imports: [
+    ConfigModule.forRoot({
+      load: [configLoader],
+      validationSchema: envSchema,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return createDataSource(configService) as TypeOrmModuleOptions;
+      },
+      inject: [ConfigService],
+    }),
+    UserModule,
+    CompanyModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
