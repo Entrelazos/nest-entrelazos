@@ -2,14 +2,12 @@
 import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
 import { Role } from './role.entity';
 import { Permission } from './permission.entity';
+import { City } from 'src/common/entities/city.entity';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  address: string;
 
   @Column()
   cellphone: string;
@@ -31,6 +29,10 @@ export class User {
 
   @Column({type: 'datetime', default: () => 'CURRENT_TIMESTAMP'})
   created_at: Date;
+
+  @ManyToOne(() => City)
+  @JoinColumn({ name: 'city_id' })
+  city: City;
 
   @ManyToOne(() => Role)
   @JoinColumn({ name: 'role_id' })

@@ -12,7 +12,7 @@ export class UserController {
     try {
       return await this.userService.createUser(createUserDto);
     } catch (error) {
-      throw new BadRequestException(error);
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -21,7 +21,7 @@ export class UserController {
     try {
       return await this.userService.createRole(createRoleDto);
     } catch (error) {
-      throw new BadRequestException(error);
+      throw new BadRequestException(error.message);
     }
   }
 }

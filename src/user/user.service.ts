@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDTO } from './dto/user.dto';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
+import { Injectable } from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
+
+import { CreateUserDTO } from './dto/user.dto';
+import { User } from './entities/user.entity';
 import { Role } from './entities/role.entity';
 import { CreateRoleDTO } from './dto/role.dto';
 
@@ -16,7 +17,7 @@ export class UserService {
 
   async createUser(createUserDto: CreateUserDTO) {
     const validate = await this.validateUniqueness(
-      'Role',
+      'User',
       'email',
       createUserDto.email,
     );
@@ -24,7 +25,10 @@ export class UserService {
     if (validate) {
       throw new Error(`The email ${createUserDto.email} is already in use`);
     }
-    const user = this.userRepository.create(createUserDto);
+    const user = this.userRepository.create({
+      ...createUserDto,
+      password: createUserDto.identification,
+    });
     return await this.userRepository.save(user);
   }
 
@@ -43,7 +47,7 @@ export class UserService {
   }
 
   private async validateUniqueness(
-    entityName: any,
+    entityName: string,
     column: string,
     value: any,
   ): Promise<boolean> {
@@ -51,9 +55,6 @@ export class UserService {
     const existingEntity = await repository.findOne({
       where: { [column]: value },
     });
-    if (existingEntity) {
-      return true;
-    }
-    return false;
+    return !!existingEntity;
   }
 }

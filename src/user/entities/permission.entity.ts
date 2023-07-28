@@ -14,6 +14,9 @@ export class Permission {
   @Column()
   route: string;
 
+  @Column()
+  method: string;
+
   @ManyToMany(() => Role)
   @JoinTable()
   roles: Role[]
