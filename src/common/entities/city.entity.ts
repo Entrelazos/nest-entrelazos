@@ -24,6 +24,6 @@ export class City {
   users?: User[];
 
   @ManyToOne(() => Region)
-  @JoinColumn({ name: 'region_id' }) 
+  @JoinColumn({ name: 'region_id' })
   region: Region;
 }
