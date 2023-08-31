@@ -1,5 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Role } from './role.entity';
 
@@ -19,9 +25,9 @@ export class Permission {
 
   @ManyToMany(() => Role)
   @JoinTable()
-  roles: Role[]
+  roles: Role[];
 
   @ManyToMany(() => User)
   @JoinTable()
-  users: User[]
+  users: User[];
 }

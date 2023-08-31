@@ -1,7 +1,12 @@
 /* eslint-disable prettier/prettier */
-import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  JoinColumn,
+  ManyToOne,
+} from 'typeorm';
 import { Role } from './role.entity';
-import { Permission } from './permission.entity';
 import { City } from 'src/common/entities/city.entity';
 
 @Entity()
@@ -27,7 +32,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column({type: 'datetime', default: () => 'CURRENT_TIMESTAMP'})
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
   @ManyToOne(() => City)

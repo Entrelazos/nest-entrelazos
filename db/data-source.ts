@@ -3,7 +3,7 @@ import { DataSourceOptions } from 'typeorm';
 
 export const createDataSourceOptions = async (
   configService: ConfigService,
-): Promise<DataSourceOptions> => {  
+): Promise<DataSourceOptions> => {
   return {
     type: 'mysql',
     host: configService.get<string>('dbHost', 'localhost'),
@@ -13,7 +13,7 @@ export const createDataSourceOptions = async (
     password: configService.get<string>('dbPass', ''),
     entities: ['dist/**/*.entity{.js,.ts}'],
     migrations: ['dist/db/migrations/*{.js,.ts}'],
-    synchronize: true
+    synchronize: true,
   };
 };
 
