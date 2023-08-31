@@ -2,6 +2,7 @@ import { Body, Controller, Post, BadRequestException } from '@nestjs/common';
 import { CreateUserDTO } from './dto/user.dto';
 import { UserService } from './user.service';
 import { CreateRoleDTO } from './dto/role.dto';
+import { AssignUserRoleDTO } from './dto/user.role.dto';
 
 @Controller('user')
 export class UserController {
@@ -20,6 +21,15 @@ export class UserController {
   async createRole(@Body() createRoleDto: CreateRoleDTO) {
     try {
       return await this.userService.createRole(createRoleDto);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Post('role/assign')
+  async assignUserRole(@Body() assignUserRoleDTO: AssignUserRoleDTO) {
+    try {
+      return await this.userService.associateUserWithRole(assignUserRoleDTO);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

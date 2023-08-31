@@ -6,6 +6,7 @@ import { CreateUserDTO } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { Role } from './entities/role.entity';
 import { CreateRoleDTO } from './dto/role.dto';
+import { AssignUserRoleDTO } from './dto/user.role.dto';
 
 @Injectable()
 export class UserService {
@@ -44,6 +45,22 @@ export class UserService {
     }
     const role = this.roleRepository.create(createRoleDto);
     return await this.roleRepository.save(role);
+  }
+
+  async associateUserWithRole(assignUserRoleDTO: AssignUserRoleDTO) {
+    const user = await this.userRepository.findOneBy({
+      id: assignUserRoleDTO.user_id,
+    });
+    const role = await this.roleRepository.findOneBy({
+      id: assignUserRoleDTO.role_id,
+    });
+
+    if (!user || !role) {
+      return null;
+    }
+
+    user.role = role;
+    return this.userRepository.save(user);
   }
 
   private async validateUniqueness(
