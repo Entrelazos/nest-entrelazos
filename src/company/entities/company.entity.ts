@@ -1,6 +1,7 @@
-import { Column, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CompanyAddress } from './company.address.entity';
 
+@Entity()
 export class Company {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,7 +15,7 @@ export class Company {
   @Column()
   nit: string;
 
-  @OneToMany(() => CompanyAddress, (CompanyAddress) => CompanyAddress.id)
+  @OneToMany(() => CompanyAddress, (CompanyAddress) => CompanyAddress.company)
   address?: CompanyAddress[];
 
   @Column()
