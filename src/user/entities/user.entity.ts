@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
+  RelationId,
 } from 'typeorm';
 import { Role } from './role.entity';
 import { City } from 'src/common/entities/city.entity';
@@ -31,15 +32,21 @@ export class User {
 
   @Column()
   password: string;
+  
+  @Column()
+  city_id: number;
+  
+  @Column()
+  role_id: number;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
   @ManyToOne(() => City)
-  @JoinColumn({ name: 'city_id' })
+  @JoinColumn({ name: 'city_id', referencedColumnName: 'id' })
   city: City;
 
-  @ManyToOne(() => Role)
-  @JoinColumn({ name: 'role_id' })
+  @ManyToOne(() => Role, role => role.users)
+  @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
   role: Role;
 }

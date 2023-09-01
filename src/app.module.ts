@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { CompanyModule } from './company/company.module';
 import createDataSource from '../db/data-source';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -23,8 +24,9 @@ import createDataSource from '../db/data-source';
       },
       inject: [ConfigService],
     }),
-    UserModule,
+    CommonModule,
     CompanyModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

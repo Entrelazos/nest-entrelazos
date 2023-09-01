@@ -1,26 +1,58 @@
-import { IsNotEmpty, IsBoolean, IsNumber } from 'class-validator';
+import {
+  IsEmail,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateUserDTO {
   @IsNotEmpty()
-  cellphone: string;
+  readonly cellphone: string;
+
+  @IsOptional()
+  readonly city_id: number;
 
   @IsNotEmpty()
-  city_id: number;
+  @IsEmail()
+  readonly email: string;
 
   @IsNotEmpty()
-  email: string;
-
-  @IsNotEmpty()
-  identification: string;
+  readonly identification: string;
 
   @IsNotEmpty()
   @IsBoolean()
-  is_active: boolean;
+  readonly is_active: boolean;
 
   @IsNotEmpty()
-  name: string;
+  readonly name: string;
 
   @IsNotEmpty()
   @IsNumber()
-  role_id: number;
+  readonly role_id: number;
+}
+
+export class UpdateUserDTO {
+  @IsOptional()
+  readonly cellphone?: string;
+
+  @IsOptional()
+  readonly city_id?: number;
+
+  @IsOptional()
+  readonly email?: string;
+
+  @IsOptional()
+  readonly identification?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly is_active?: boolean;
+
+  @IsOptional()
+  readonly name?: string;
+
+  @IsOptional()
+  @IsNumber()
+  readonly role_id?: number;
 }

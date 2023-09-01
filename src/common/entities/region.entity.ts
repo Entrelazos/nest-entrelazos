@@ -20,6 +20,9 @@ export class Region {
   @Column()
   code: string;
 
+  @Column()
+  country_id: number;
+
   @OneToMany(() => City, (city) => city.region)
   cities?: City[];
 

@@ -1,5 +1,14 @@
-import { Body, Controller, Post, BadRequestException } from '@nestjs/common';
-import { CreateUserDTO } from './dto/user.dto';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
+import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
 import { UserService } from './user.service';
 import { CreateRoleDTO } from './dto/role.dto';
 import { AssignUserRoleDTO } from './dto/user.role.dto';
@@ -7,6 +16,15 @@ import { AssignUserRoleDTO } from './dto/user.role.dto';
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
+
+  @Post('role/assign')
+  async assignUserRole(@Body() assignUserRoleDTO: AssignUserRoleDTO) {
+    try {
+      return await this.userService.associateUserWithRole(assignUserRoleDTO);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 
   @Post()
   async createUser(@Body() createUserDto: CreateUserDTO) {
@@ -26,10 +44,34 @@ export class UserController {
     }
   }
 
-  @Post('role/assign')
-  async assignUserRole(@Body() assignUserRoleDTO: AssignUserRoleDTO) {
+  @Get('/list')
+  async getUsers(
+    @Query('limit') limit: number,
+    @Query('order') orderBy: string,
+    @Query('dir') orderDirection: string,
+    @Query('page') page: number,
+    @Query('search') search: string,
+  ) {
     try {
-      return await this.userService.associateUserWithRole(assignUserRoleDTO);
+      return await this.userService.getUsers(
+        limit,
+        orderBy,
+        orderDirection,
+        page,
+        search,
+      );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Put('/:id')
+  async updateUser(
+    @Param('id') id: number,
+    @Body() updateUserDto: UpdateUserDTO,
+  ) {
+    try {
+      return await this.userService.updateUser(id, updateUserDto);
     } catch (error) {
       throw new BadRequestException(error.message);
     }
