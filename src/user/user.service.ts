@@ -5,6 +5,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { Role } from './entities/role.entity';
+import { City } from 'src/common/entities/city.entity';
 import { CreateRoleDTO } from './dto/role.dto';
 import {
   IPaginationOptions,
@@ -18,6 +19,7 @@ export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Role) private roleRepository: Repository<Role>,
+    @InjectRepository(City) private cityRepository: Repository<City>,
     @InjectEntityManager() private readonly entityManager: EntityManager,
   ) {}
 
@@ -30,9 +32,8 @@ export class UserService {
     });
 
     if (!user || !role) {
-      return null;
+      throw new Error('Not existing user or role.');
     }
-    console.log(user, role);
 
     user.role = role;
     return this.userRepository.save(user);
@@ -62,10 +63,26 @@ export class UserService {
     if (validate) {
       throw new Error(`The email ${createUserDto.email} is already in use`);
     }
+    const { city_id, role_id } = createUserDto;
+    const role = await this.roleRepository.findOneBy({
+      id: role_id,
+    });
+    if (!role) {
+      throw new Error('Not existing role.');
+    }
+
     const user = this.userRepository.create({
       ...createUserDto,
       password: createUserDto.identification,
     });
+
+    const city = await this.cityRepository.findOneBy({ id: city_id });
+    if (!city) {
+      throw new Error('Not existing city.');
+    }
+    user.city = city;
+
+    user.role = role;
     return await this.userRepository.save(user);
   }
 
