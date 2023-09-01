@@ -32,21 +32,15 @@ export class User {
 
   @Column()
   password: string;
-  
-  @Column()
-  city_id: number;
-  
-  @Column()
-  role_id: number;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  @ManyToOne(() => City)
+  @ManyToOne(() => City, (city) => city.users, { nullable: false })
   @JoinColumn({ name: 'city_id', referencedColumnName: 'id' })
   city: City;
 
-  @ManyToOne(() => Role, role => role.users)
+  @ManyToOne(() => Role, (role) => role.users, { nullable: false })
   @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
   role: Role;
 }
