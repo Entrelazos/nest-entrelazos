@@ -103,7 +103,14 @@ export class UserService {
     const options: IPaginationOptions = { page, limit };
 
     const queryBuilder = this.userRepository.createQueryBuilder('users');
+    queryBuilder.select([
+      'users.cellphone',
+      'users.email',
+      'users.identification',
+      'users.name',
+    ]);
     queryBuilder.leftJoinAndSelect('users.role', 'role');
+    queryBuilder.leftJoinAndSelect('users.city', 'city');
 
     if (search != '') {
       queryBuilder.andWhere(
