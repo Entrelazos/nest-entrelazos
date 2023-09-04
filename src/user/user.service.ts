@@ -1,5 +1,5 @@
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
 
 import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
@@ -13,6 +13,7 @@ import {
   paginate,
 } from 'nestjs-typeorm-paginate';
 import { AssignUserRoleDTO } from './dto/user.role.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -54,6 +55,12 @@ export class UserService {
   }
 
   async createUser(createUserDto: CreateUserDTO) {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(
+      createUserDto.password,
+      saltRounds,
+    );
+
     const validate = await this.validateUniqueness(
       'User',
       'email',
@@ -73,7 +80,7 @@ export class UserService {
 
     const user = this.userRepository.create({
       ...createUserDto,
-      password: createUserDto.identification,
+      password: hashedPassword,
     });
 
     const city = await this.cityRepository.findOneBy({ id: city_id });
@@ -117,6 +124,24 @@ export class UserService {
       ...user,
       ...updateUserDto,
     });
+  }
+
+  async findByEmail(email: string): Promise<User | undefined> {
+    return await this.userRepository.findOne({ where: { email } });
+  }
+
+  async findByRefreshToken(refreshToken: string): Promise<User | undefined> {
+    const user = await this.userRepository.findOne({ where: { refreshToken } });
+
+    return user;
+  }
+
+  async updateRefreshToken(email: string, refreshToken: string) {
+    const user = await this.findByEmail(email);
+    if (user) {
+      user.refreshToken = refreshToken;
+      this.userRepository.save(user);
+    }
   }
 
   private async validateUniqueness(

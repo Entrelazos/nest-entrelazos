@@ -7,11 +7,13 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
 import { UserService } from './user.service';
 import { CreateRoleDTO } from './dto/role.dto';
 import { AssignUserRoleDTO } from './dto/user.role.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UserController {
@@ -45,6 +47,7 @@ export class UserController {
   }
 
   @Get('/list')
+  @UseGuards(AuthGuard('jwt'))
   async getUsers(
     @Query('limit') limit: number,
     @Query('order') orderBy: string,

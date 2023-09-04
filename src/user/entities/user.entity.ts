@@ -5,7 +5,6 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
-  RelationId,
 } from 'typeorm';
 import { Role } from './role.entity';
 import { City } from 'src/common/entities/city.entity';
@@ -32,6 +31,9 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({ nullable: true })
+  refreshToken: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
