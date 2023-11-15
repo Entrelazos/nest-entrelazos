@@ -32,6 +32,12 @@ export class User {
   @Column()
   password: string;
 
+  @Column()
+  city_id: number;
+
+  @Column()
+  role_id: number;
+
   @Column({ nullable: true })
   refreshToken: string;
 

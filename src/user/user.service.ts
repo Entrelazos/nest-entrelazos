@@ -77,19 +77,15 @@ export class UserService {
     if (!role) {
       throw new Error('Not existing role.');
     }
-
+    const city = await this.cityRepository.findOneBy({ id: city_id });
+    if (!city) {
+      throw new Error('Not existing city.');
+    }
     const user = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
     });
 
-    const city = await this.cityRepository.findOneBy({ id: city_id });
-    if (!city) {
-      throw new Error('Not existing city.');
-    }
-    user.city = city;
-
-    user.role = role;
     return await this.userRepository.save(user);
   }
 
