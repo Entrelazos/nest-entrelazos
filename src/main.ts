@@ -12,7 +12,7 @@ async function bootstrap() {
   );
   const allowedOrigins = [
     'http://localhost:5173',
-    'https://pear-clear-sockeye.cyclic.app',
+    'https://deploy-preview-2--kaleidoscopic-truffle-b8874a.netlify.app',
   ];
   app.enableCors({
     origin: allowedOrigins, // Replace with your frontend's origin
