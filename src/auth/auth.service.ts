@@ -4,10 +4,14 @@ import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDTO, LoginUserDTO } from 'src/user/dto/user.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
@@ -33,9 +37,15 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
     const refreshToken = uuidv4();
 
-    // Store the refresh token in the database
-    await this.userService.updateRefreshToken(email, refreshToken);
     delete user.password;
     return { ...user, accessToken, refreshToken };
+  }
+
+  async updateRefreshToken(email: string, refreshToken: string) {
+    const user = await this.userService.findByEmail(email);
+    if (user) {
+      user.refreshToken = refreshToken;
+      this.userRepository.save(user);
+    }
   }
 }

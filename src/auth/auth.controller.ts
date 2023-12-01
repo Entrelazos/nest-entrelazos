@@ -33,6 +33,8 @@ export class AuthController {
   async login(@Body() loginUserDto: LoginUserDTO) {
     try {
       const user = await this.authService.login(loginUserDto);
+      const { email, refreshToken } = user;
+      await this.authService.updateRefreshToken(email, refreshToken);
       return user;
     } catch (error) {
       throw new BadRequestException(error.message);

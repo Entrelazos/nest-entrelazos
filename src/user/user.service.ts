@@ -139,14 +139,6 @@ export class UserService {
     return user;
   }
 
-  async updateRefreshToken(email: string, refreshToken: string) {
-    const user = await this.findByEmail(email);
-    if (user) {
-      user.refreshToken = refreshToken;
-      this.userRepository.save(user);
-    }
-  }
-
   private async validateUniqueness(
     entityName: string,
     column: string,
