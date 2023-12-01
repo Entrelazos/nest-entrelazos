@@ -1,4 +1,10 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { CreateUserDTO, LoginUserDTO } from 'src/user/dto/user.dto';
@@ -15,32 +21,44 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() createUserDto: CreateUserDTO) {
-    const user = await this.authService.register(createUserDto);
-    return user;
+    try {
+      const user = await this.authService.register(createUserDto);
+      return user;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Post('login')
   async login(@Body() loginUserDto: LoginUserDTO) {
-    const user = await this.authService.login(loginUserDto);
-    return user;
+    try {
+      const user = await this.authService.login(loginUserDto);
+      return user;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Post('refresh-token')
   async refreshToken(@Body() tokenDto: TokenDTO) {
-    const { refreshToken } = tokenDto;
+    try {
+      const { refreshToken } = tokenDto;
 
-    // Check if the refresh token is valid (e.g., exists in the database)
-    const user = await this.userService.findByRefreshToken(refreshToken);
+      // Check if the refresh token is valid (e.g., exists in the database)
+      const user = await this.userService.findByRefreshToken(refreshToken);
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid refresh token');
+      if (!user) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      const { email } = user;
+      // Generate a new access token
+      const payload = { email };
+      const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+
+      return { accessToken };
+    } catch (error) {
+      throw new BadRequestException(error.message);
     }
-
-    const { email } = user;
-    // Generate a new access token
-    const payload = { email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-
-    return { accessToken };
   }
 }
