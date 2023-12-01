@@ -1,6 +1,14 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { CompanyAddress } from './company.address.entity';
 import { Product } from 'src/product/entities/product.entity';
+import { UserCompany } from 'src/user/entities/user.company.entity';
 
 @Entity()
 export class Company {
@@ -24,4 +32,8 @@ export class Company {
 
   @Column()
   description: string;
+
+  @ManyToMany(() => UserCompany, (userCompany) => userCompany.company)
+  @JoinTable()
+  users: UserCompany[];
 }

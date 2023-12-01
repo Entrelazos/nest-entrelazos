@@ -5,9 +5,12 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
+  JoinTable,
+  ManyToMany,
 } from 'typeorm';
 import { Role } from './role.entity';
 import { City } from 'src/common/entities/city.entity';
+import { UserCompany } from './user.company.entity';
 
 @Entity()
 export class User {
@@ -41,7 +44,7 @@ export class User {
   @Column({ nullable: true })
   refreshToken: string;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
   @ManyToOne(() => City, (city) => city.users, { nullable: false })
@@ -51,4 +54,8 @@ export class User {
   @ManyToOne(() => Role, (role) => role.users, { nullable: false })
   @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
   role: Role;
+
+  @ManyToMany(() => UserCompany, userCompany => userCompany.user)
+  @JoinTable()
+  companies: UserCompany[];
 }
