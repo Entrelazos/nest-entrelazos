@@ -35,7 +35,7 @@ export class AuthService {
 
     // Store the refresh token in the database
     await this.userService.updateRefreshToken(email, refreshToken);
-
-    return { accessToken, refreshToken };
+    delete user.password;
+    return { ...user, accessToken, refreshToken };
   }
 }
