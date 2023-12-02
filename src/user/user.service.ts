@@ -14,6 +14,7 @@ import {
 } from 'nestjs-typeorm-paginate';
 import { AssignUserRoleDTO } from './dto/user.role.dto';
 import * as bcrypt from 'bcrypt';
+import { UniquenessValidationUtil } from '../util/uniqueness-validation.util';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,7 @@ export class UserService {
     @InjectRepository(Role) private roleRepository: Repository<Role>,
     @InjectRepository(City) private cityRepository: Repository<City>,
     @InjectEntityManager() private readonly entityManager: EntityManager,
+    private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
 
   async associateUserWithRole(assignUserRoleDTO: AssignUserRoleDTO) {
@@ -41,7 +43,7 @@ export class UserService {
   }
 
   async createRole(createRoleDto: CreateRoleDTO) {
-    const validate = await this.validateUniqueness(
+    const validate = await this.uniquenessValidationUtil.validateUniqueness(
       'Role',
       'role_name',
       createRoleDto.role_name,
@@ -61,7 +63,7 @@ export class UserService {
       saltRounds,
     );
 
-    const validate = await this.validateUniqueness(
+    const validate = await this.uniquenessValidationUtil.validateUniqueness(
       'User',
       'email',
       createUserDto.email,
@@ -137,17 +139,5 @@ export class UserService {
     const user = await this.userRepository.findOne({ where: { refreshToken } });
 
     return user;
-  }
-
-  private async validateUniqueness(
-    entityName: string,
-    column: string,
-    value: any,
-  ): Promise<boolean> {
-    const repository = this.entityManager.getRepository(entityName);
-    const existingEntity = await repository.findOne({
-      where: { [column]: value },
-    });
-    return !!existingEntity;
   }
 }

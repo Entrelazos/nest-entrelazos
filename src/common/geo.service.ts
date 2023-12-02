@@ -12,6 +12,7 @@ import { Country } from './entities/country.entity';
 import { CreateCountryDTO } from './dto/country.dto';
 import { CreateRegionDTO } from './dto/region.dto';
 import { Region } from './entities/region.entity';
+import { UniquenessValidationUtil } from '../util/uniqueness-validation.util';
 
 @Injectable()
 export class GeoService {
@@ -20,6 +21,7 @@ export class GeoService {
     @InjectRepository(Country) private countryRepository: Repository<Country>,
     @InjectRepository(Region) private regionRepository: Repository<Region>,
     @InjectEntityManager() private readonly entityManager: EntityManager,
+    private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
 
   async createCity(createCityDto: CreateCityDTO) {
@@ -35,7 +37,7 @@ export class GeoService {
   }
 
   async createCountry(createCountryDto: CreateCountryDTO) {
-    const validate = await this.validateUniqueness(
+    const validate = await this.uniquenessValidationUtil.validateUniqueness(
       'Country',
       'name',
       createCountryDto.name,
@@ -110,17 +112,5 @@ export class GeoService {
       orderDirection == 'DESC' ? 'DESC' : 'ASC',
     );
     return paginate<Country>(queryBuilder, options);
-  }
-
-  private async validateUniqueness(
-    entityName: string,
-    column: string,
-    value: any,
-  ): Promise<boolean> {
-    const repository = this.entityManager.getRepository(entityName);
-    const existingEntity = await repository.findOne({
-      where: { [column]: value },
-    });
-    return !!existingEntity;
   }
 }
