@@ -5,9 +5,10 @@ import { Country } from './entities/country.entity';
 import { Region } from './entities/region.entity';
 import { GeoController } from './geo.controller';
 import { GeoService } from './geo.service';
+import { UtilsModule } from 'src/util/utils.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([City, Country, Region])],
+  imports: [TypeOrmModule.forFeature([City, Country, Region]), UtilsModule],
   controllers: [GeoController],
   providers: [GeoService],
 })
