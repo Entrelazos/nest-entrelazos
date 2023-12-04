@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -14,6 +15,7 @@ import { UserService } from './user.service';
 import { CreateRoleDTO } from './dto/role.dto';
 import { AssignUserRoleDTO } from './dto/user.role.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Company } from 'src/company/entities/company.entity';
 
 @Controller('user')
 export class UserController {
@@ -78,5 +80,12 @@ export class UserController {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  @Get(':id/companies')
+  async getUserCompanies(
+    @Param('id', ParseIntPipe) userId: number,
+  ): Promise<Company[]> {
+    return this.userService.getUserCompanies(userId);
   }
 }

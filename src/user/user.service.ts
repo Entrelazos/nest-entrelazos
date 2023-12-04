@@ -1,5 +1,5 @@
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
 
 import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
@@ -15,6 +15,7 @@ import {
 import { AssignUserRoleDTO } from './dto/user.role.dto';
 import * as bcrypt from 'bcrypt';
 import { UniquenessValidationUtil } from '../util/uniqueness-validation.util';
+import { Company } from 'src/company/entities/company.entity';
 
 @Injectable()
 export class UserService {
@@ -139,5 +140,18 @@ export class UserService {
     const user = await this.userRepository.findOne({ where: { refreshToken } });
 
     return user;
+  }
+
+  async getUserCompanies(userId: number): Promise<Company[]> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['companies', 'companies.company'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User company with ID ${userId} not found`);
+    }
+
+    return user.companies.map((userCompany) => userCompany.company);
   }
 }
