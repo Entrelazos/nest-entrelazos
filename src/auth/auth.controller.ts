@@ -8,7 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { CreateUserDTO, LoginUserDTO } from 'src/user/dto/user.dto';
-import { UserService } from 'src/user/user.service';
+import { UserService } from 'src/user/services/user.service';
 import { TokenDTO } from './dto/token.dto';
 
 @Controller('auth')
