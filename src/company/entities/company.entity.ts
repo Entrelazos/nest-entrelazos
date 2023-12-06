@@ -21,7 +21,7 @@ export class Company {
   address?: CompanyAddress[];
 
   @OneToMany(() => Product, (product) => product.company)
-  product?: Product[];
+  products?: Product[];
 
   @Column()
   description: string;

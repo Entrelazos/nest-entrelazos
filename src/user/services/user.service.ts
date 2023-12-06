@@ -135,7 +135,7 @@ export class UserService {
   async findByEmail(email: string): Promise<User | undefined> {
     return await this.userRepository.findOne({
       where: { email },
-      relations: ['companies', 'companies.company'],
+      relations: ['companies', 'companies.company', 'role', 'city'],
     });
   }
 
