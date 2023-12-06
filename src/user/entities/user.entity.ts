@@ -5,8 +5,7 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
-  JoinTable,
-  ManyToMany,
+  OneToMany,
 } from 'typeorm';
 import { Role } from './role.entity';
 import { City } from 'src/common/entities/city.entity';
@@ -55,7 +54,6 @@ export class User {
   @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
   role: Role;
 
-  @ManyToMany(() => UserCompany, (userCompany) => userCompany.user)
-  @JoinTable({ name: 'user_company' })
+  @OneToMany(() => UserCompany, (userCompany) => userCompany.user)
   companies: UserCompany[];
 }

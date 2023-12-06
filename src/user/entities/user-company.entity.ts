@@ -4,7 +4,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Company } from '../../company/entities/company.entity';
@@ -18,10 +17,8 @@ export class UserCompany {
   jobPosition: string;
 
   @ManyToOne(() => Company, (company) => company.users)
-  @JoinColumn({ name: 'companyId' })
   company: Company;
 
   @ManyToOne(() => User, (user) => user.companies)
-  @JoinColumn({ name: 'userId' })
   user: User;
 }
