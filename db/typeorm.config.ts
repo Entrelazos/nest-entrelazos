@@ -1,7 +1,9 @@
 import { ConfigService } from '@nestjs/config';
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import { SeederOptions } from 'typeorm-extension';
+
 import createDataSourceOptions from './data-source';
-import { DataSource } from 'typeorm';
+import InitSeeder from './seeds/init.seeder';
 
 export const createTypeOrmConfig = async (
   configService: ConfigService,
@@ -10,5 +12,6 @@ export const createTypeOrmConfig = async (
 
   return new DataSource({
     ...dataSourceOptions,
-  });
+    seeds: [InitSeeder],
+  } as DataSourceOptions & SeederOptions);
 };

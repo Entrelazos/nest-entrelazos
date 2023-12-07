@@ -12,8 +12,8 @@ export const createDataSourceOptions = async (
     username: configService.get<string>('dbUser', 'root'),
     password: configService.get<string>('dbPass', ''),
     entities: ['dist/**/*.entity{.js,.ts}'],
+    migrationsTableName: 'migrations',
     migrations: ['dist/db/migrations/*{.js,.ts}'],
-    synchronize: true,
   };
 };
 
