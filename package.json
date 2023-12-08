@@ -22,7 +22,7 @@
     "typeorm:cli": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli -d ./db/migration.config.ts",
     "migration:generate": "npm run typeorm:cli -- migration:generate",
     "migration:run": "npm run typeorm:cli -- migration:run",
-    "seed": "ts-node -r tsconfig-paths/register node_modules/typeorm-extension/dist/cli/index.js seed -d ./db/migration.config.ts"
+    "seed": "ts-node -r tsconfig-paths/register node_modules/typeorm-extension/bin/cli.cjs seed:run -d ./db/migration.config.ts"
   },
   "dependencies": {
     "@nestjs/common": "^9.4.3",
