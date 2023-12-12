@@ -10,10 +10,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'https://pear-clear-sockeye.cyclic.app',
-  ];
+  const allowedOrigins = ['*'];
   app.enableCors({
     origin: allowedOrigins, // Replace with your frontend's origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
