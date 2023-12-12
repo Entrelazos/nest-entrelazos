@@ -4,11 +4,13 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
+  Unique,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Company } from '../../company/entities/company.entity';
 
 @Entity({ name: 'user_company' })
+@Unique(['company', 'user'])
 export class UserCompany {
   @PrimaryGeneratedColumn()
   id: number;

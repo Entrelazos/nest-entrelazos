@@ -112,7 +112,13 @@ export class UserController {
   async createUserCompany(
     @Body() createUserCompanyDto: CreateUserCompanyDto,
   ): Promise<UserCompany> {
-    return this.userCompanyService.createUserCompany(createUserCompanyDto);
+    try {
+      return await this.userCompanyService.createUserCompany(
+        createUserCompanyDto,
+      );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Put('/company/:id')
