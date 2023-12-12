@@ -5,6 +5,10 @@ import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
 import { EntityManager, Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
 import { CreateCompanyDto } from './dto/company.dto';
+import { create } from 'domain';
+import { number } from 'joi';
+import { Pagination, paginate } from 'nestjs-typeorm-paginate';
+import { async } from 'rxjs';
 
 @Injectable()
 export class CompanyService {
@@ -16,8 +20,27 @@ export class CompanyService {
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
 
-  async findAll(): Promise<Company[]> {
-    return this.companyRepository.find();
+  async findAll(options: {
+    page: number;
+    limit: number;
+    orderBy: string;
+    orderDirection: 'ASC' | 'DESC';
+    search: string;
+  }): Promise<Pagination<Company>> {
+    const { page, limit, orderBy, orderDirection, search } = options;
+
+    const queryBuilder = this.companyRepository
+      .createQueryBuilder('company')
+      .orderBy(`company.${orderBy}`, orderDirection);
+
+    if (search) {
+      queryBuilder.where(`company.name LIKE :search`, {
+        search: `%${search}%`,
+      });
+      // Add other search conditions as needed
+    }
+
+    return await paginate<Company>(queryBuilder, { page, limit });
   }
 
   async findOne(id: number): Promise<Company> {

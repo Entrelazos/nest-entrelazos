@@ -10,11 +10,13 @@ import {
   ParseIntPipe,
   UseGuards,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { Company } from './entities/company.entity';
 import { CreateCompanyDto } from './dto/company.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('companies')
@@ -22,9 +24,16 @@ export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Get()
-  async findAll(): Promise<Company[]> {
+  async findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('orderBy') orderBy = 'name',
+    @Query('orderDirection') orderDirection = 'ASC' as 'ASC' | 'DESC',
+    @Query('search') search = '',
+  ): Promise<Pagination<Company>> {
     try {
-      return await this.companyService.findAll();
+      const options = { page, limit, orderBy, orderDirection, search };
+      return await this.companyService.findAll(options);
     } catch (error) {
       throw new BadRequestException(error.message);
     }
