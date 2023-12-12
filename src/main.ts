@@ -12,7 +12,7 @@ async function bootstrap() {
   );
   const allowedOrigins = ['*'];
   app.enableCors({
-    origin: allowedOrigins, // Replace with your frontend's origin
+    origin: '*', // Replace with your frontend's origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
