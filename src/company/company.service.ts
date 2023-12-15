@@ -4,10 +4,7 @@ import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
 import { CreateCompanyDto } from './dto/company.dto';
-import { create } from 'domain';
-import { number } from 'joi';
 import { Pagination, paginate } from 'nestjs-typeorm-paginate';
-import { async } from 'rxjs';
 
 @Injectable()
 export class CompanyService {

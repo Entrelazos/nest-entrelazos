@@ -28,7 +28,7 @@ export class CompanyController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('orderBy') orderBy = 'name',
-    @Query('orderDirection') orderDirection = 'ASC' as 'ASC' | 'DESC',
+    @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
     @Query('search') search = '',
   ): Promise<Pagination<Company>> {
     try {
