@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/product.dto';
 import { Category } from './entities/category.entity';
 import { Company } from 'src/company/entities/company.entity';
+import { IPaginationMeta, Pagination, paginate } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class ProductService {
@@ -28,7 +29,7 @@ export class ProductService {
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['address', 'product', 'users'],
+      relations: ['company'],
     });
 
     if (!product) {
@@ -67,5 +68,23 @@ export class ProductService {
 
   async remove(id: number): Promise<void> {
     await this.productRepository.delete(id);
+  }
+
+  async getProductsByCompany(
+    companyId: number,
+    page = 1,
+    limit = 10,
+    orderBy = 'id', // Default orderBy column
+    orderDirection: 'ASC' | 'DESC' = 'ASC', // Default order direction
+  ): Promise<Pagination<Product>> {
+    const options = { page, limit };
+    const queryBuilder: SelectQueryBuilder<Product> =
+      this.productRepository.createQueryBuilder('product');
+    queryBuilder.where('product.company = :companyId', { companyId });
+
+    // Apply ordering
+    queryBuilder.orderBy(`product.${orderBy}`, orderDirection);
+
+    return paginate<Product, IPaginationMeta>(queryBuilder, options);
   }
 }
