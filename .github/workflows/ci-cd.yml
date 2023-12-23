@@ -39,7 +39,7 @@ jobs:
             eval "$(ssh-agent -s)"
             ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
             cd ${{ github.workspace }}
-            git pull origin main
+            git pull origin master
             npm install
             npm run build
-            pm2 restart your_nest_app
+            pm2 restart nest-entrelazos
