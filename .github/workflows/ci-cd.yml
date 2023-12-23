@@ -34,7 +34,10 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
+            eval "$(ssh-agent -s)"
+            ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
             cd ${{ github.workspace }}
             git pull origin main
             npm install
