@@ -1,5 +1,18 @@
 {
   "singleQuote": true,
+  "semi": true,
+  "tabWidth": 2,
   "trailingComma": "all",
-  "endOfLine": "auto"
+  "arrowParens": "always",
+  "bracketSpacing": true,
+  "endOfLine": "auto",
+  "jsxBracketSameLine": false,
+  "overrides": [
+    {
+      "files": "*.json",
+      "options": {
+        "printWidth": 200
+      }
+    }
+  ]
 }
