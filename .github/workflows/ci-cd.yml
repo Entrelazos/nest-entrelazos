@@ -37,7 +37,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             eval "$(ssh-agent -s)"
-            ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
             cd nest-entrelazos
             git pull origin master
             npm install
