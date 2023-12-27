@@ -38,7 +38,7 @@ jobs:
           script: |
             eval "$(ssh-agent -s)"
             ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-            cd ${{ github.workspace }}
+            cd entrelazos
             git pull origin master
             npm install
             npm run build
