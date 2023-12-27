@@ -45,7 +45,7 @@ jobs:
             source ~/.nvm/nvm.sh
             npm install
             npm run build
-            pm2 restart dist/src/main.js
+            pm2 restart ecosystem.config.js --env production
         env:
           NODE_ENV: production
           DB_CONNECTION: mysql

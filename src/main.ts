@@ -4,10 +4,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import * as dotenv from 'dotenv';
 
 async function bootstrap() {
-  dotenv.config();
   const app = await NestFactory.create(AppModule, new ExpressAdapter());
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
