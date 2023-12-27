@@ -37,6 +37,8 @@ jobs:
           passphrase: ${{ secrets.SSH_HOST_PASSPHRASE }}
           script: |
             eval "$(ssh-agent -s)"
+            echo "Adding SSH key"
+            echo "${{ secrets.SSH_PRIVATE_KEY }}"
             echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
             cd nest-entrelazos
             git pull origin master
