@@ -32,9 +32,9 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          username: ${{ secrets.SSH_HOST_USERNAME }}
+          key: ${{ secrets.SSH_HOST_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_HOST_PASSPHRASE }}
           script: |
             eval "$(ssh-agent -s)"
             echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
