@@ -11,6 +11,8 @@ import { CompanyModule } from './company/company.module';
 import createDataSource from '../db/data-source';
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
+import { UtilsModule } from './util/utils.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { AuthModule } from './auth/auth.module';
     CompanyModule,
     UserModule,
     AuthModule,
+    UtilsModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

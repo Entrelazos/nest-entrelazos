@@ -8,7 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { CreateUserDTO, LoginUserDTO } from 'src/user/dto/user.dto';
-import { UserService } from 'src/user/user.service';
+import { UserService } from 'src/user/services/user.service';
 import { TokenDTO } from './dto/token.dto';
 
 @Controller('auth')
@@ -33,6 +33,8 @@ export class AuthController {
   async login(@Body() loginUserDto: LoginUserDTO) {
     try {
       const user = await this.authService.login(loginUserDto);
+      const { email, refreshToken } = user;
+      await this.authService.updateRefreshToken(email, refreshToken);
       return user;
     } catch (error) {
       throw new BadRequestException(error.message);

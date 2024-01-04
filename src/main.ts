@@ -10,12 +10,9 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'https://pear-clear-sockeye.cyclic.app',
-  ];
+  const allowedOrigins = ['*'];
   app.enableCors({
-    origin: allowedOrigins, // Replace with your frontend's origin
+    origin: '*', // Replace with your frontend's origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -27,7 +24,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  app.enableCors();
   const configService = app.get(ConfigService);
   await app.listen(configService.get('port'));
 }
