@@ -1,11 +1,7 @@
 import {
   Controller,
   Get,
-  Post,
-  Put,
-  Delete,
   Param,
-  Body,
   ParseIntPipe,
   UseGuards,
   BadRequestException,
@@ -14,7 +10,6 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
-import { CreateProductDto } from './dto/product.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 
 @UseGuards(AuthGuard('jwt'))
