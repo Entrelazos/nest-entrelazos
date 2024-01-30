@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProductService } from './product.service';
-import { ProductController } from './product.controller';
-import { Product } from './entities/product.entity';
+import { CategoryService } from './category.service';
+import { CategoryController } from './category.controller';
+import { Product } from 'src/product/entities/product.entity';
 import { UtilsModule } from 'src/util/utils.module';
 import { Company } from 'src/company/entities/company.entity';
 import { Category } from './entities/category.entity';
@@ -12,7 +12,7 @@ import { Category } from './entities/category.entity';
     TypeOrmModule.forFeature([Product, Company, Category]),
     UtilsModule,
   ],
-  controllers: [ProductController],
-  providers: [ProductService],
+  controllers: [CategoryController],
+  providers: [CategoryService],
 })
-export class ProductModule {}
+export class CategoryModule {}

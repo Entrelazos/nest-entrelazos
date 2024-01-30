@@ -1,20 +1,21 @@
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
 
-import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
-import { User } from './entities/user.entity';
-import { Role } from './entities/role.entity';
+import { CreateUserDTO, UpdateUserDTO } from '../dto/user.dto';
+import { User } from '../entities/user.entity';
+import { Role } from '../entities/role.entity';
 import { City } from 'src/common/entities/city.entity';
-import { CreateRoleDTO } from './dto/role.dto';
+import { CreateRoleDTO } from '../dto/role.dto';
 import {
   IPaginationOptions,
   Pagination,
   paginate,
 } from 'nestjs-typeorm-paginate';
-import { AssignUserRoleDTO } from './dto/user.role.dto';
+import { AssignUserRoleDTO } from '../dto/user.role.dto';
 import * as bcrypt from 'bcrypt';
-import { UniquenessValidationUtil } from '../util/uniqueness-validation.util';
+import { UniquenessValidationUtil } from '../../util/uniqueness-validation.util';
+import { Company } from 'src/company/entities/company.entity';
 
 @Injectable()
 export class UserService {
@@ -132,12 +133,28 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
-    return await this.userRepository.findOne({ where: { email } });
+    return await this.userRepository.findOne({
+      where: { email },
+      relations: ['companies', 'companies.company', 'role', 'city'],
+    });
   }
 
   async findByRefreshToken(refreshToken: string): Promise<User | undefined> {
     const user = await this.userRepository.findOne({ where: { refreshToken } });
 
     return user;
+  }
+
+  async getUserCompanies(userId: number): Promise<Company[]> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['companies', 'companies.company'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User company with ID ${userId} not found`);
+    }
+
+    return user.companies.map((userCompany) => userCompany.company);
   }
 }

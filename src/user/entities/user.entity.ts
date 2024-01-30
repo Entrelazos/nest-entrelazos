@@ -5,12 +5,11 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
-  JoinTable,
-  ManyToMany,
+  OneToMany,
 } from 'typeorm';
 import { Role } from './role.entity';
 import { City } from 'src/common/entities/city.entity';
-import { UserCompany } from './user.company.entity';
+import { UserCompany } from './user-company.entity';
 
 @Entity()
 export class User {
@@ -55,7 +54,6 @@ export class User {
   @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
   role: Role;
 
-  @ManyToMany(() => UserCompany, userCompany => userCompany.user)
-  @JoinTable()
+  @OneToMany(() => UserCompany, (userCompany) => userCompany.user)
   companies: UserCompany[];
 }

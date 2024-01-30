@@ -1,14 +1,7 @@
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { CompanyAddress } from './company.address.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { CompanyAddress } from './company-address.entity';
 import { Product } from 'src/product/entities/product.entity';
-import { UserCompany } from 'src/user/entities/user.company.entity';
+import { UserCompany } from 'src/user/entities/user-company.entity';
 
 @Entity()
 export class Company {
@@ -28,12 +21,11 @@ export class Company {
   address?: CompanyAddress[];
 
   @OneToMany(() => Product, (product) => product.company)
-  product?: Product[];
+  products?: Product[];
 
   @Column()
   description: string;
 
-  @ManyToMany(() => UserCompany, (userCompany) => userCompany.company)
-  @JoinTable()
+  @OneToMany(() => UserCompany, (userCompany) => userCompany.company)
   users: UserCompany[];
 }

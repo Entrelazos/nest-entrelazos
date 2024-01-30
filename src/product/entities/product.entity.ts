@@ -22,6 +22,9 @@ export class Product {
   @Column()
   is_public: boolean;
 
+  @Column()
+  is_approved: boolean;
+
   @Column({
     type: 'float',
     precision: 10,
@@ -29,15 +32,11 @@ export class Product {
   })
   price: number;
 
-  @ManyToOne(() => Category, (category) => category.products, {
-    nullable: false,
-  })
+  @ManyToOne(() => Category, (category) => category.products)
   @JoinColumn({ name: 'category_id', referencedColumnName: 'id' })
   category: Category;
 
-  @ManyToOne(() => Company, (company) => company.product, {
-    nullable: false,
-  })
+  @ManyToOne(() => Company, (company) => company.products)
   @JoinColumn({ name: 'company_id', referencedColumnName: 'id' })
   company: Company;
 }
