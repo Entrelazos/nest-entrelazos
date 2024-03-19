@@ -3,15 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
+import { CompanyAddress } from './entities/company-address.entity';
 import { CreateCompanyDto } from './dto/company.dto';
 import { Pagination, paginate } from 'nestjs-typeorm-paginate';
+import { CreateCompanyAddressDto } from './dto/company-address.dto';
 
 @Injectable()
 export class CompanyService {
   constructor(
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
-    // @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(CompanyAddress)
+    private readonly companyAddressRpository: Repository<CompanyAddress>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
@@ -27,6 +30,10 @@ export class CompanyService {
 
     const queryBuilder = this.companyRepository
       .createQueryBuilder('company')
+      .leftJoinAndSelect('company.address', 'address')
+      .leftJoinAndSelect('address.city', 'city')
+      .leftJoinAndSelect('city.region', 'region')
+      .leftJoinAndSelect('region.country', 'country')
       .orderBy(`company.${orderBy}`, orderDirection);
 
     if (search) {
@@ -52,9 +59,24 @@ export class CompanyService {
     return company;
   }
 
-  async create(createCompanyDto: CreateCompanyDto): Promise<Company> {
-    const company = this.companyRepository.create(createCompanyDto);
-    return this.companyRepository.save(company);
+  async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
+    const { nomenclature, city } = createCompanyDto;
+    const companyEntity = this.companyRepository.create(createCompanyDto);
+    console.log(companyEntity.id);
+
+    const savedCompany = await this.companyRepository.save(createCompanyDto);
+    await this.createCompanyAddress({
+      nomenclature,
+      city,
+      company: savedCompany,
+    });
+    return savedCompany;
+  }
+
+  async createCompanyAddress(
+    createCompanyAddressDto: CreateCompanyAddressDto,
+  ): Promise<CompanyAddress> {
+    return await this.companyAddressRpository.save(createCompanyAddressDto);
   }
 
   async update(

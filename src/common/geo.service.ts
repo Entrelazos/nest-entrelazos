@@ -89,28 +89,14 @@ export class GeoService {
     return paginate<City>(queryBuilder, options);
   }
 
-  async getCountries(
-    limit = 10,
-    orderBy = 'name',
-    orderDirection = 'name',
-    page = 1,
-    search = '',
-  ): Promise<Pagination<Country>> {
-    const options: IPaginationOptions = { page, limit };
+  async getRegionsByCountry(countryId: number): Promise<Region[]> {
+    console.log('====================================');
+    console.log(countryId);
+    console.log('====================================');
+    return this.regionRepository.find({ where: { country_id: countryId } });
+  }
 
-    const queryBuilder = this.countryRepository.createQueryBuilder('countries');
-    queryBuilder.leftJoinAndSelect('countries.role', 'role');
-
-    if (search != '') {
-      queryBuilder.andWhere(
-        `(countries.name LIKE '%${search}%' OR countries.code LIKE '%${search}%')`,
-      );
-    }
-
-    queryBuilder.orderBy(
-      `countries.${orderBy ?? 'id'}`,
-      orderDirection == 'DESC' ? 'DESC' : 'ASC',
-    );
-    return paginate<Country>(queryBuilder, options);
+  async getCountries(): Promise<Country[]> {
+    return this.countryRepository.find();
   }
 }

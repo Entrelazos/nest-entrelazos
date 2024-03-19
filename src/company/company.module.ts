@@ -4,9 +4,10 @@ import { UtilsModule } from 'src/util/utils.module';
 import { CompanyController } from './company.controller';
 import { CompanyService } from './company.service';
 import { Company } from './entities/company.entity';
+import { CompanyAddress } from './entities/company-address.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Company]), UtilsModule],
+  imports: [TypeOrmModule.forFeature([Company, CompanyAddress]), UtilsModule],
   controllers: [CompanyController],
   providers: [CompanyService],
 })
