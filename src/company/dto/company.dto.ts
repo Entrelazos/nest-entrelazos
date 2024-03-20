@@ -1,5 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
-import { City } from 'src/common/entities/city.entity';
+import { CompanyAddress } from '../entities/company-address.entity';
 
 export class CreateCompanyDto {
   @IsNotEmpty()
@@ -12,11 +12,5 @@ export class CreateCompanyDto {
   readonly nit: string;
 
   @IsNotEmpty()
-  readonly description: string;
-
-  @IsNotEmpty()
-  readonly nomenclature: string;
-
-  @IsNotEmpty()
-  readonly city: City;
+  readonly addresses: CompanyAddress[];
 }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
 import { Repository } from 'typeorm';
@@ -14,7 +18,7 @@ export class CompanyService {
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
     @InjectRepository(CompanyAddress)
-    private readonly companyAddressRpository: Repository<CompanyAddress>,
+    private readonly companyAddressRepository: Repository<CompanyAddress>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
@@ -60,26 +64,38 @@ export class CompanyService {
   }
 
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
-    const { nomenclature, city } = createCompanyDto;
-    const companyEntity = this.companyRepository.create(createCompanyDto);
-    console.log(companyEntity.id);
+    const { name, type, nit, addresses } = createCompanyDto;
 
-    const savedCompany = await this.companyRepository.save(createCompanyDto);
-    console.log('====================================');
-    console.log(savedCompany);
-    console.log('====================================');
-    await this.createCompanyAddress({
-      nomenclature,
-      city,
-      company: savedCompany,
-    });
+    // Create company entity
+    const company = this.companyRepository.create({ name, type, nit });
+
+    // Validate addresses existence
+    if (!addresses || addresses.length === 0) {
+      throw new BadRequestException('Company addresses are required.');
+    }
+
+    // Save company first to ensure its id is generated
+    const savedCompany = await this.companyRepository.save(company);
+
+    // Create company address entities
+    const companyAddresses = addresses.map((addressData) =>
+      this.companyAddressRepository.create({
+        ...addressData,
+        company: savedCompany,
+      }),
+    );
+
+    // Save company addresses
+    await this.companyAddressRepository.save(companyAddresses);
+
+    // Return created company
     return savedCompany;
   }
 
   async createCompanyAddress(
     createCompanyAddressDto: CreateCompanyAddressDto,
   ): Promise<CompanyAddress> {
-    return await this.companyAddressRpository.save(createCompanyAddressDto);
+    return await this.companyAddressRepository.save(createCompanyAddressDto);
   }
 
   async update(
