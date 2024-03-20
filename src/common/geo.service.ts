@@ -99,4 +99,11 @@ export class GeoService {
   async getCountries(): Promise<Country[]> {
     return this.countryRepository.find();
   }
+
+  async getCitiesByRegion(regionId: number): Promise<City[]> {
+    console.log('====================================');
+    console.log(regionId);
+    console.log('====================================');
+    return this.cityRepository.find({ where: { region_id: regionId } });
+  }
 }

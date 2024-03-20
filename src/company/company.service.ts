@@ -65,6 +65,9 @@ export class CompanyService {
     console.log(companyEntity.id);
 
     const savedCompany = await this.companyRepository.save(createCompanyDto);
+    console.log('====================================');
+    console.log(savedCompany);
+    console.log('====================================');
     await this.createCompanyAddress({
       nomenclature,
       city,
