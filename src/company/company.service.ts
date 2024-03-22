@@ -11,6 +11,7 @@ import { CompanyAddress } from './entities/company-address.entity';
 import { CreateCompanyDto } from './dto/company.dto';
 import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { CreateCompanyAddressDto } from './dto/company-address.dto';
+import { UserCompany } from 'src/user/entities/user-company.entity';
 
 @Injectable()
 export class CompanyService {
@@ -19,6 +20,8 @@ export class CompanyService {
     private readonly companyRepository: Repository<Company>,
     @InjectRepository(CompanyAddress)
     private readonly companyAddressRepository: Repository<CompanyAddress>,
+    @InjectRepository(UserCompany)
+    private readonly userCompanyRepository: Repository<UserCompany>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
@@ -64,7 +67,7 @@ export class CompanyService {
   }
 
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
-    const { name, type, nit, addresses } = createCompanyDto;
+    const { name, type, nit, users, addresses } = createCompanyDto;
 
     // Create company entity
     const company = this.companyRepository.create({ name, type, nit });
@@ -85,8 +88,17 @@ export class CompanyService {
       }),
     );
 
+    // Create company address entities
+    const companyUsers = users.map((usersData) =>
+      this.userCompanyRepository.create({
+        ...usersData,
+        company: savedCompany,
+      }),
+    );
+
     // Save company addresses
     await this.companyAddressRepository.save(companyAddresses);
+    await this.userCompanyRepository.save(companyUsers);
 
     // Return created company
     return savedCompany;

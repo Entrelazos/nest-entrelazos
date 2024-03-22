@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { CompanyAddress } from '../entities/company-address.entity';
+import { UserCompany } from 'src/user/entities/user-company.entity';
 
 export class CreateCompanyDto {
   @IsNotEmpty()
@@ -13,4 +14,7 @@ export class CreateCompanyDto {
 
   @IsNotEmpty()
   readonly addresses: CompanyAddress[];
+
+  @IsNotEmpty()
+  readonly users: UserCompany[];
 }
