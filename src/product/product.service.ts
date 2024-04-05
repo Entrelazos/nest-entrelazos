@@ -101,6 +101,7 @@ export class ProductService {
     queryBuilder
       .where('category.id = :id', { id: categoryId })
       .leftJoinAndSelect('category.products', 'products')
+      .leftJoinAndSelect('products.company', 'company')
       .orderBy(`category.${orderBy}`, orderDirection);
 
     return await paginate<Category>(queryBuilder, {
