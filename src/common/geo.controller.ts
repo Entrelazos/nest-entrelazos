@@ -5,12 +5,18 @@ import {
   Get,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
 import { GeoService } from './geo.service';
 import { CreateCityDTO } from './dto/city.dto';
 import { CreateCountryDTO } from './dto/country.dto';
 import { CreateRegionDTO } from './dto/region.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Geography')
+@UseGuards(AuthGuard('jwt'))
 @Controller('geo')
 export class GeoController {
   constructor(private geoService: GeoService) {}

@@ -20,7 +20,9 @@ import { Company } from 'src/company/entities/company.entity';
 import { UserCompanyService } from './services/user-company.service';
 import { UserCompany } from './entities/user-company.entity';
 import { CreateUserCompanyDto } from './dto/create-user-company.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('user')
 export class UserController {
   constructor(

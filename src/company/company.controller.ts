@@ -17,7 +17,9 @@ import { Company } from './entities/company.entity';
 import { CreateCompanyDto } from './dto/company.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Pagination } from 'nestjs-typeorm-paginate';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Companies')
 @UseGuards(AuthGuard('jwt'))
 @Controller('companies')
 export class CompanyController {

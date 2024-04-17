@@ -11,7 +11,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Products')
 @UseGuards(AuthGuard('jwt'))
 @Controller('products')
 export class ProductController {

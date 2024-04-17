@@ -7,7 +7,9 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { CategoryService } from './category.service';
 import { Category } from './entities/category.entity';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Products')
 @UseGuards(AuthGuard('jwt'))
 @Controller('categories')
 export class CategoryController {
