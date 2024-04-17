@@ -12,6 +12,9 @@ export class Country {
   @Column()
   code: string;
 
+  @Column()
+  alpha_code: string;
+
   @OneToMany(() => Region, (region) => region.country)
   region?: Region[];
 }

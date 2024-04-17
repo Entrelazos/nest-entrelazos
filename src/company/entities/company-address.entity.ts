@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Company } from './company.entity';
 
-@Entity({ name: 'company_address' })
+@Entity()
 export class CompanyAddress {
   @PrimaryGeneratedColumn()
   id: number;
@@ -17,10 +17,10 @@ export class CompanyAddress {
   nomenclature: string;
 
   @ManyToOne(() => City)
-  @JoinColumn({ name: 'city_id' })
+  @JoinColumn({ name: 'city_id', referencedColumnName: 'id' })
   city: City;
 
   @ManyToOne(() => Company)
-  @JoinColumn({ name: 'company_id' })
+  @JoinColumn({ name: 'company_id', referencedColumnName: 'id' })
   company: Company;
 }

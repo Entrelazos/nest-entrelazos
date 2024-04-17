@@ -85,6 +85,28 @@ export class ProductService {
     // Apply ordering
     queryBuilder.orderBy(`product.${orderBy}`, orderDirection);
 
-    return paginate<Product, IPaginationMeta>(queryBuilder, options);
+    return await paginate<Product, IPaginationMeta>(queryBuilder, options);
+  }
+
+  async getCategoryWithProducts(
+    categoryId: number,
+    page = 1,
+    limit = 10,
+    orderBy = 'id', // Default orderBy column
+    orderDirection: 'ASC' | 'DESC' = 'ASC', // Default order direction
+  ): Promise<Pagination<Category>> {
+    const queryBuilder: SelectQueryBuilder<Category> =
+      this.categoryRepository.createQueryBuilder('category');
+
+    queryBuilder
+      .where('category.id = :id', { id: categoryId })
+      .leftJoinAndSelect('category.products', 'products')
+      .leftJoinAndSelect('products.company', 'company')
+      .orderBy(`category.${orderBy}`, orderDirection);
+
+    return await paginate<Category>(queryBuilder, {
+      page,
+      limit,
+    });
   }
 }
