@@ -88,17 +88,19 @@ export class CompanyService {
       }),
     );
 
-    // Create company address entities
-    const companyUsers = users.map((usersData) =>
-      this.userCompanyRepository.create({
-        ...usersData,
-        company: savedCompany,
-      }),
-    );
-
     // Save company addresses
     await this.companyAddressRepository.save(companyAddresses);
-    await this.userCompanyRepository.save(companyUsers);
+
+    if (users?.length) {
+      // Create company address entities
+      const companyUsers = users.map((usersData) =>
+        this.userCompanyRepository.create({
+          ...usersData,
+          company: savedCompany,
+        }),
+      );
+      await this.userCompanyRepository.save(companyUsers);
+    }
 
     // Return created company
     return savedCompany;
