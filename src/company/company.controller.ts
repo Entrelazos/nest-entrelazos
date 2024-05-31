@@ -50,6 +50,17 @@ export class CompanyController {
     }
   }
 
+  @Get('/company/:companyName')
+  async findOneByName(
+    @Param('companyName') companyName: string,
+  ): Promise<Company> {
+    try {
+      return await this.companyService.findOneByName(companyName);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
   @Post()
   async createCompany(
     @Body() createCompanyDto: CreateCompanyDto,

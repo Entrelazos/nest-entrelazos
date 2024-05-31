@@ -66,6 +66,19 @@ export class CompanyService {
     return company;
   }
 
+  async findOneByName(name: string): Promise<Company> {
+    const company = await this.companyRepository.findOne({
+      where: { name },
+      relations: ['address', 'products', 'users'],
+    });
+
+    if (!company) {
+      throw new NotFoundException(`Company with name ${name} not found`);
+    }
+
+    return company;
+  }
+
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
     const { name, type, nit, users, addresses } = createCompanyDto;
 
