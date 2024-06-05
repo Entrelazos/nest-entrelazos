@@ -1,7 +1,15 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { CompanyAddress } from './company-address.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { UserCompany } from 'src/user/entities/user-company.entity';
+import { Social } from 'src/common/entities/social.entity';
 
 @Entity()
 export class Company {
@@ -18,7 +26,7 @@ export class Company {
   nit: string;
 
   @OneToMany(() => CompanyAddress, (CompanyAddress) => CompanyAddress.company)
-  address?: CompanyAddress[];
+  addresses?: CompanyAddress[];
 
   @OneToMany(() => Product, (product) => product.company)
   products?: Product[];
@@ -28,4 +36,8 @@ export class Company {
 
   @OneToMany(() => UserCompany, (userCompany) => userCompany.company)
   users: UserCompany[];
+
+  @ManyToOne(() => Social, (social) => social.users)
+  @JoinColumn({ name: 'social_id', referencedColumnName: 'id' })
+  social: Social;
 }

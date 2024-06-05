@@ -37,8 +37,8 @@ export class CompanyService {
 
     const queryBuilder = this.companyRepository
       .createQueryBuilder('company')
-      .leftJoinAndSelect('company.address', 'address')
-      .leftJoinAndSelect('address.city', 'city')
+      .leftJoinAndSelect('company.addresses', 'addresses')
+      .leftJoinAndSelect('addresses.city', 'city')
       .leftJoinAndSelect('city.region', 'region')
       .leftJoinAndSelect('region.country', 'country')
       .orderBy(`company.${orderBy}`, orderDirection);
@@ -56,7 +56,7 @@ export class CompanyService {
   async findOne(id: number): Promise<Company> {
     const company = await this.companyRepository.findOne({
       where: { id },
-      relations: ['address', 'products', 'users'],
+      relations: ['addresses', 'products', 'users'],
     });
 
     if (!company) {
@@ -69,7 +69,16 @@ export class CompanyService {
   async findOneByName(name: string): Promise<Company> {
     const company = await this.companyRepository.findOne({
       where: { name },
-      relations: ['address', 'products', 'users'],
+      relations: [
+        'addresses',
+        'addresses.city',
+        'addresses.city.region',
+        'addresses.city.region.country',
+        'products',
+        'users',
+        'users.user',
+        'social',
+      ],
     });
 
     if (!company) {

@@ -10,6 +10,7 @@ import {
 import { Role } from './role.entity';
 import { City } from 'src/common/entities/city.entity';
 import { UserCompany } from './user-company.entity';
+import { Social } from 'src/common/entities/social.entity';
 
 @Entity()
 export class User {
@@ -56,4 +57,8 @@ export class User {
 
   @OneToMany(() => UserCompany, (userCompany) => userCompany.user)
   companies: UserCompany[];
+
+  @ManyToOne(() => Social, (social) => social.users)
+  @JoinColumn({ name: 'social_id', referencedColumnName: 'id' })
+  social: Social;
 }

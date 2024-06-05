@@ -138,7 +138,7 @@ export class UserService {
       relations: [
         'companies',
         'companies.company',
-        'companies.company.address',
+        'companies.company.addresses',
         'role',
         'city',
       ],
