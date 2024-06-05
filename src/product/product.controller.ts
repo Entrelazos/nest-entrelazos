@@ -14,6 +14,7 @@ import { Pagination } from 'nestjs-typeorm-paginate';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { Category } from './entities/category.entity';
+import { Company } from 'src/company/entities/company.entity';
 
 @ApiTags('Products')
 @UseGuards(AuthGuard('jwt'))
@@ -28,7 +29,7 @@ export class ProductController {
     @Query('limit') limit = 10,
     @Query('orderBy') orderBy = 'id',
     @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
-  ): Promise<Pagination<Product>> {
+  ): Promise<Pagination<Company>> {
     try {
       return await this.productService.getProductsByCompany(
         companyId,

@@ -90,9 +90,6 @@ export class GeoService {
   }
 
   async getRegionsByCountry(countryId: number): Promise<Region[]> {
-    console.log('====================================');
-    console.log(countryId);
-    console.log('====================================');
     return this.regionRepository.find({ where: { country_id: countryId } });
   }
 
@@ -101,9 +98,6 @@ export class GeoService {
   }
 
   async getCitiesByRegion(regionId: number): Promise<City[]> {
-    console.log('====================================');
-    console.log(regionId);
-    console.log('====================================');
     return this.cityRepository.find({ where: { region_id: regionId } });
   }
 }

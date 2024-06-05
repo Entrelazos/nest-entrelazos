@@ -8,13 +8,13 @@ export class Company {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column()
   type: string;
 
-  @Column()
+  @Column({ unique: true })
   nit: string;
 
   @OneToMany(() => CompanyAddress, (CompanyAddress) => CompanyAddress.company)

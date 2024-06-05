@@ -15,6 +15,5 @@ export class CreateCompanyDto {
   @IsNotEmpty()
   readonly addresses: CompanyAddress[];
 
-  @IsNotEmpty()
   readonly users: UserCompany[];
 }

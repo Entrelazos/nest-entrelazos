@@ -66,6 +66,19 @@ export class CompanyService {
     return company;
   }
 
+  async findOneByName(name: string): Promise<Company> {
+    const company = await this.companyRepository.findOne({
+      where: { name },
+      relations: ['address', 'products', 'users'],
+    });
+
+    if (!company) {
+      throw new NotFoundException(`Company with name ${name} not found`);
+    }
+
+    return company;
+  }
+
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
     const { name, type, nit, users, addresses } = createCompanyDto;
 
@@ -88,17 +101,19 @@ export class CompanyService {
       }),
     );
 
-    // Create company address entities
-    const companyUsers = users.map((usersData) =>
-      this.userCompanyRepository.create({
-        ...usersData,
-        company: savedCompany,
-      }),
-    );
-
     // Save company addresses
     await this.companyAddressRepository.save(companyAddresses);
-    await this.userCompanyRepository.save(companyUsers);
+
+    if (users?.length) {
+      // Create company address entities
+      const companyUsers = users.map((usersData) =>
+        this.userCompanyRepository.create({
+          ...usersData,
+          company: savedCompany,
+        }),
+      );
+      await this.userCompanyRepository.save(companyUsers);
+    }
 
     // Return created company
     return savedCompany;
