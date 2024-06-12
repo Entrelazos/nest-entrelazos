@@ -12,6 +12,7 @@ import { UserCompany } from './entities/user-company.entity';
 import { Company } from 'src/company/entities/company.entity';
 import { CompanyService } from 'src/company/company.service';
 import { CompanyAddress } from 'src/company/entities/company-address.entity';
+import { Social } from 'src/common/entities/social.entity';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CompanyAddress } from 'src/company/entities/company-address.entity';
       UserCompany,
       Company,
       CompanyAddress,
+      Social,
     ]),
     UtilsModule,
   ],

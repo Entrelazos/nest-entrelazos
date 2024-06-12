@@ -16,13 +16,15 @@ export class Company {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  // @Column({ unique: true })
+  @Column()
   name: string;
 
   @Column()
   type: string;
 
-  @Column({ unique: true })
+  // @Column({ unique: true })
+  @Column()
   nit: string;
 
   @OneToMany(() => CompanyAddress, (CompanyAddress) => CompanyAddress.company)
@@ -37,7 +39,7 @@ export class Company {
   @OneToMany(() => UserCompany, (userCompany) => userCompany.company)
   users: UserCompany[];
 
-  @ManyToOne(() => Social, (social) => social.users)
+  @ManyToOne(() => Social, (socialNetworks) => socialNetworks.companies)
   @JoinColumn({ name: 'social_id', referencedColumnName: 'id' })
   social: Social;
 }

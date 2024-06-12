@@ -26,7 +26,7 @@ export class GeoService {
 
   async createCity(createCityDto: CreateCityDTO) {
     const validate = await this.cityRepository.findOne({
-      where: { name: createCityDto.name, region_id: createCityDto.region_id },
+      where: { name: createCityDto.name, region_id: createCityDto.regionId },
     });
 
     if (validate) {

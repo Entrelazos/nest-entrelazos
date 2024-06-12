@@ -1,6 +1,10 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 import { CompanyAddress } from '../entities/company-address.entity';
 import { UserCompany } from 'src/user/entities/user-company.entity';
+import { Social } from 'src/common/entities/social.entity';
+import { CreateCompanyAddressDto } from './company-address.dto';
+import { CreateUserCompanyDto } from 'src/user/dto/create-user-company.dto';
+import { CreateSocialDto } from 'src/common/dto/social.dto';
 
 export class CreateCompanyDto {
   @IsNotEmpty()
@@ -12,8 +16,15 @@ export class CreateCompanyDto {
   @IsNotEmpty()
   readonly nit: string;
 
-  @IsNotEmpty()
-  readonly addresses: CompanyAddress[];
+  @IsOptional()
+  readonly description: string;
 
-  readonly users: UserCompany[];
+  @IsNotEmpty()
+  readonly addresses: CreateCompanyAddressDto[];
+
+  @IsOptional()
+  readonly users: CreateUserCompanyDto[];
+
+  @IsOptional()
+  readonly social: CreateSocialDto;
 }

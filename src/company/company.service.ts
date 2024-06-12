@@ -12,6 +12,7 @@ import { CreateCompanyDto } from './dto/company.dto';
 import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { CreateCompanyAddressDto } from './dto/company-address.dto';
 import { UserCompany } from 'src/user/entities/user-company.entity';
+import { Social } from 'src/common/entities/social.entity';
 
 @Injectable()
 export class CompanyService {
@@ -22,6 +23,8 @@ export class CompanyService {
     private readonly companyAddressRepository: Repository<CompanyAddress>,
     @InjectRepository(UserCompany)
     private readonly userCompanyRepository: Repository<UserCompany>,
+    @InjectRepository(Social)
+    private readonly socialRepository: Repository<Social>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
@@ -89,10 +92,21 @@ export class CompanyService {
   }
 
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
-    const { name, type, nit, users, addresses } = createCompanyDto;
+    const { name, type, nit, users, addresses, social } = createCompanyDto;
+
+    let savedSocial: Social | undefined;
+    if (social) {
+      const socialNetworks = this.socialRepository.create(social);
+      savedSocial = await this.socialRepository.save(socialNetworks);
+    }
 
     // Create company entity
-    const company = this.companyRepository.create({ name, type, nit });
+    const company = this.companyRepository.create({
+      name,
+      type,
+      nit,
+      social: savedSocial,
+    });
 
     // Validate addresses existence
     if (!addresses || addresses.length === 0) {
@@ -115,9 +129,9 @@ export class CompanyService {
 
     if (users?.length) {
       // Create company address entities
-      const companyUsers = users.map((usersData) =>
+      const companyUsers = users.map((userData) =>
         this.userCompanyRepository.create({
-          ...usersData,
+          ...userData,
           company: savedCompany,
         }),
       );
@@ -131,7 +145,10 @@ export class CompanyService {
   async createCompanyAddress(
     createCompanyAddressDto: CreateCompanyAddressDto,
   ): Promise<CompanyAddress> {
-    return await this.companyAddressRepository.save(createCompanyAddressDto);
+    const companyAddress = this.companyAddressRepository.create(
+      createCompanyAddressDto,
+    );
+    return await this.companyAddressRepository.save(companyAddress);
   }
 
   async update(
