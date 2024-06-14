@@ -92,8 +92,8 @@ export class CompanyService {
   }
 
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
-    const { name, type, nit, users, addresses, social } = createCompanyDto;
-
+    const { name, type, nit, description, users, addresses, social } =
+      createCompanyDto;
     let savedSocial: Social | undefined;
     if (social) {
       const socialNetworks = this.socialRepository.create(social);
@@ -105,27 +105,25 @@ export class CompanyService {
       name,
       type,
       nit,
+      description,
       social: savedSocial,
     });
-
-    // Validate addresses existence
-    if (!addresses || addresses.length === 0) {
-      throw new BadRequestException('Company addresses are required.');
-    }
 
     // Save company first to ensure its id is generated
     const savedCompany = await this.companyRepository.save(company);
 
     // Create company address entities
-    const companyAddresses = addresses.map((addressData) =>
-      this.companyAddressRepository.create({
-        ...addressData,
-        company: savedCompany,
-      }),
-    );
+    if (addresses.length) {
+      const companyAddresses = addresses.map((addressData) =>
+        this.companyAddressRepository.create({
+          ...addressData,
+          company: savedCompany,
+        }),
+      );
 
-    // Save company addresses
-    await this.companyAddressRepository.save(companyAddresses);
+      // Save company addresses
+      await this.companyAddressRepository.save(companyAddresses);
+    }
 
     if (users?.length) {
       // Create company address entities

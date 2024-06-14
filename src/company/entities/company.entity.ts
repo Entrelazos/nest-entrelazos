@@ -16,15 +16,13 @@ export class Company {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // @Column({ unique: true })
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column()
   type: string;
 
-  // @Column({ unique: true })
-  @Column()
+  @Column({ unique: true })
   nit: string;
 
   @OneToMany(() => CompanyAddress, (CompanyAddress) => CompanyAddress.company)

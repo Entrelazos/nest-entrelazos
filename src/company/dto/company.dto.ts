@@ -19,7 +19,7 @@ export class CreateCompanyDto {
   @IsOptional()
   readonly description: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   readonly addresses: CreateCompanyAddressDto[];
 
   @IsOptional()
