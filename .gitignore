@@ -34,3 +34,6 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Ignore ecosystem file for pm2 deployment in prod
+ecosystem.config.js
