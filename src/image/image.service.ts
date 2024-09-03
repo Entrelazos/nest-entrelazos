@@ -7,6 +7,8 @@ import { CreateImageDto } from './dto/create-image.dto';
 import { EntityType } from './image.types';
 import { User } from 'src/user/entities/user.entity';
 import { Company } from 'src/company/entities/company.entity';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class ImageService {
@@ -21,42 +23,94 @@ export class ImageService {
     private companyRepository: Repository<Company>,
   ) {}
 
-  async createImage(createImageDto: CreateImageDto): Promise<Image> {
+  async createImage(
+    createImageDto: CreateImageDto,
+    file: Express.Multer.File,
+  ): Promise<Image> {
     const { url, altText, description, entityId, entityType } = createImageDto;
 
-    // Check entity existence based on entityType
-    let entityExists = false;
+    let folderPath: string;
+    let imageName: string;
+    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const fileExtension = path.extname(file.originalname);
+    const sanitizedFileName = file.originalname.replace(/\s+/g, '-');
+    const baseName = path.basename(sanitizedFileName, fileExtension);
+
     switch (entityType) {
-      case 'product':
-        entityExists = !!(await this.productRepository.findOne({
+      case 'product': {
+        const product = await this.productRepository.findOne({
           where: { id: entityId },
-        }));
+          relations: ['company'],
+        });
+        if (!product)
+          throw new NotFoundException(`Product with ID ${entityId} not found`);
+        const companyName = product.company.name.replace(/\s+/g, '_');
+        folderPath = path.join(
+          __dirname,
+          '..',
+          '..',
+          'images',
+          'products-images',
+          companyName,
+          product.id.toString(),
+        );
+        imageName = `${baseName}-${currentDate}${fileExtension}`;
         break;
-      case 'user':
-        entityExists = !!(await this.userRepository.findOne({
+      }
+      case 'user': {
+        const user = await this.userRepository.findOne({
+          where: {
+            id: entityId,
+          },
+        });
+        if (!user)
+          throw new NotFoundException(`User with ID ${entityId} not found`);
+        const userName = user.name.replace(/\s+/g, '_');
+        folderPath = path.join(
+          __dirname,
+          '..',
+          '..',
+          'images',
+          'user-images',
+          userName,
+          user.id.toString(),
+        );
+        imageName = `${baseName}-${currentDate}${fileExtension}`;
+        break;
+      }
+      case 'company': {
+        const company = await this.companyRepository.findOne({
           where: { id: entityId },
-        }));
+        });
+        if (!company)
+          throw new NotFoundException(`Company with ID ${entityId} not found`);
+        const companyName = company.name.replace(/\s+/g, '_');
+        folderPath = path.join(
+          __dirname,
+          '..',
+          '..',
+          'images',
+          'companies-images',
+          companyName,
+          company.id.toString(),
+        );
+        imageName = `${baseName}-${currentDate}${fileExtension}`;
         break;
-      case 'company':
-        entityExists = !!(await this.companyRepository.findOne({
-          where: { id: entityId },
-        }));
-        break;
+      }
       default:
         throw new Error('Invalid entity type');
     }
 
-    if (!entityExists) {
-      throw new NotFoundException(
-        `${
-          entityType.charAt(0).toUpperCase() + entityType.slice(1)
-        } with ID ${entityId} not found`,
-      );
-    }
+    // Ensure the directory exists
+    fs.mkdirSync(folderPath, { recursive: true });
 
-    // Create and save the image if the entity exists
+    // Save the file to the server
+    const fullPath = path.join(folderPath, imageName);
+    fs.writeFileSync(fullPath, file.buffer);
+
+    // Save the image record in the database
     const image = this.imageRepository.create({
-      url,
+      url: fullPath, // Save the full path or relative path as needed
       alt_text: altText,
       description,
       entity_id: entityId,
@@ -64,6 +118,21 @@ export class ImageService {
     });
 
     return this.imageRepository.save(image);
+  }
+
+  async createImages(
+    createImageDtos: CreateImageDto[],
+    files: Express.Multer.File[],
+  ): Promise<Image[]> {
+    if (createImageDtos.length !== files.length) {
+      throw new Error('Number of DTOs must match number of files');
+    }
+
+    const imagePromises = createImageDtos.map((dto, index) =>
+      this.createImage(dto, files[index]),
+    );
+
+    return Promise.all(imagePromises);
   }
 
   async findImagesByEntity(

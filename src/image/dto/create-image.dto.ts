@@ -5,12 +5,13 @@ import {
   IsNumber,
   IsEnum,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ENTITY_TYPES, EntityType } from '../image.types';
 
 export class CreateImageDto {
   @IsString()
-  @IsNotEmpty()
-  url: string;
+  @IsOptional()
+  url?: string;
 
   @IsString()
   @IsOptional()
@@ -20,6 +21,7 @@ export class CreateImageDto {
   @IsOptional()
   description?: string;
 
+  @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
   entityId: number;
