@@ -8,9 +8,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Region } from './region.entity';
+import { BaseEntity } from './base.entity';
 
 @Entity()
-export class City {
+export class City extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

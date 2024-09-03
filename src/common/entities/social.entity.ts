@@ -1,9 +1,10 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Company } from '../../company/entities/company.entity';
 import { User } from 'src/user/entities/user.entity';
+import { BaseEntity } from './base.entity';
 
 @Entity()
-export class Social {
+export class Social extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

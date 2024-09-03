@@ -7,9 +7,10 @@ import {
 } from 'typeorm';
 import { Category } from './category.entity';
 import { Company } from 'src/company/entities/company.entity';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity()
-export class Product {
+export class Product extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

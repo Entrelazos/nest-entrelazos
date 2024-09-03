@@ -10,9 +10,10 @@ import { CompanyAddress } from './company-address.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { UserCompany } from 'src/user/entities/user-company.entity';
 import { Social } from 'src/common/entities/social.entity';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity()
-export class Company {
+export class Company extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

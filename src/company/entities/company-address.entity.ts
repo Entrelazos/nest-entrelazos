@@ -7,9 +7,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Company } from './company.entity';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity()
-export class CompanyAddress {
+export class CompanyAddress extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

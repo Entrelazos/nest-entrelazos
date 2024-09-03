@@ -8,9 +8,10 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Role } from './role.entity';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity()
-export class Permission {
+export class Permission extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
