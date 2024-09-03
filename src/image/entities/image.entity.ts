@@ -1,11 +1,6 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityType, ENTITY_TYPES } from '../image.types';
 
 @Entity()
 export class Image extends BaseEntity {
@@ -24,6 +19,9 @@ export class Image extends BaseEntity {
   @Column({ type: 'int' })
   entity_id: number;
 
-  @Column({ type: 'varchar', length: 50 })
-  entity_type: string;
+  @Column({
+    type: 'enum',
+    enum: ENTITY_TYPES,
+  })
+  entity_type: EntityType;
 }
