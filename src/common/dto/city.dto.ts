@@ -1,10 +1,15 @@
-import { IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateCityDTO {
+  @IsNotEmpty()
   @IsString()
-  readonly name: string;
+  name: string;
+
+  @IsNotEmpty()
   @IsString()
-  readonly code: string;
+  code: string;
+
+  @IsNotEmpty()
   @IsNumber()
-  readonly region_id: number;
+  regionId: number; // Assuming region is referenced by ID
 }

@@ -17,6 +17,8 @@ import { Company } from './entities/company.entity';
 import { CreateCompanyDto } from './dto/company.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Pagination } from 'nestjs-typeorm-paginate';
+import { CreateCompanyAddressDto } from './dto/company-address.dto';
+import { CompanyAddress } from './entities/company-address.entity';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('companies')
@@ -48,10 +50,36 @@ export class CompanyController {
     }
   }
 
-  @Post()
-  async create(@Body() createCompanyDto: CreateCompanyDto): Promise<Company> {
+  @Get('/company/:companyName')
+  async findOneByName(
+    @Param('companyName') companyName: string,
+  ): Promise<Company> {
     try {
-      return await this.companyService.create(createCompanyDto);
+      return await this.companyService.findOneByName(companyName);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Post()
+  async createCompany(
+    @Body() createCompanyDto: CreateCompanyDto,
+  ): Promise<Company> {
+    try {
+      return await this.companyService.createCompany(createCompanyDto);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Post(':id/address')
+  async createCompanyAddress(
+    @Body() createCompanyAddressDto: CreateCompanyAddressDto,
+  ): Promise<CompanyAddress> {
+    try {
+      return await this.companyService.createCompanyAddress(
+        createCompanyAddressDto,
+      );
     } catch (error) {
       throw new BadRequestException(error.message);
     }

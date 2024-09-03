@@ -1,17 +1,30 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
+import { CompanyAddress } from './entities/company-address.entity';
 import { CreateCompanyDto } from './dto/company.dto';
 import { Pagination, paginate } from 'nestjs-typeorm-paginate';
+import { CreateCompanyAddressDto } from './dto/company-address.dto';
+import { UserCompany } from 'src/user/entities/user-company.entity';
+import { Social } from 'src/common/entities/social.entity';
 
 @Injectable()
 export class CompanyService {
   constructor(
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
-    // @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(CompanyAddress)
+    private readonly companyAddressRepository: Repository<CompanyAddress>,
+    @InjectRepository(UserCompany)
+    private readonly userCompanyRepository: Repository<UserCompany>,
+    @InjectRepository(Social)
+    private readonly socialRepository: Repository<Social>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
@@ -27,6 +40,10 @@ export class CompanyService {
 
     const queryBuilder = this.companyRepository
       .createQueryBuilder('company')
+      .leftJoinAndSelect('company.addresses', 'addresses')
+      .leftJoinAndSelect('addresses.city', 'city')
+      .leftJoinAndSelect('city.region', 'region')
+      .leftJoinAndSelect('region.country', 'country')
       .orderBy(`company.${orderBy}`, orderDirection);
 
     if (search) {
@@ -42,7 +59,7 @@ export class CompanyService {
   async findOne(id: number): Promise<Company> {
     const company = await this.companyRepository.findOne({
       where: { id },
-      relations: ['address', 'products', 'users'],
+      relations: ['addresses', 'products', 'users'],
     });
 
     if (!company) {
@@ -52,9 +69,84 @@ export class CompanyService {
     return company;
   }
 
-  async create(createCompanyDto: CreateCompanyDto): Promise<Company> {
-    const company = this.companyRepository.create(createCompanyDto);
-    return this.companyRepository.save(company);
+  async findOneByName(name: string): Promise<Company> {
+    const company = await this.companyRepository.findOne({
+      where: { name },
+      relations: [
+        'addresses',
+        'addresses.city',
+        'addresses.city.region',
+        'addresses.city.region.country',
+        'products',
+        'users',
+        'users.user',
+        'social',
+      ],
+    });
+
+    if (!company) {
+      throw new NotFoundException(`Company with name ${name} not found`);
+    }
+
+    return company;
+  }
+
+  async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
+    const { name, type, nit, description, users, addresses, social } =
+      createCompanyDto;
+    let savedSocial: Social | undefined;
+    if (social) {
+      const socialNetworks = this.socialRepository.create(social);
+      savedSocial = await this.socialRepository.save(socialNetworks);
+    }
+
+    // Create company entity
+    const company = this.companyRepository.create({
+      name,
+      type,
+      nit,
+      description,
+      social: savedSocial,
+    });
+
+    // Save company first to ensure its id is generated
+    const savedCompany = await this.companyRepository.save(company);
+
+    // Create company address entities
+    if (addresses.length) {
+      const companyAddresses = addresses.map((addressData) =>
+        this.companyAddressRepository.create({
+          ...addressData,
+          company: savedCompany,
+        }),
+      );
+
+      // Save company addresses
+      await this.companyAddressRepository.save(companyAddresses);
+    }
+
+    if (users?.length) {
+      // Create company address entities
+      const companyUsers = users.map((userData) =>
+        this.userCompanyRepository.create({
+          ...userData,
+          company: savedCompany,
+        }),
+      );
+      await this.userCompanyRepository.save(companyUsers);
+    }
+
+    // Return created company
+    return savedCompany;
+  }
+
+  async createCompanyAddress(
+    createCompanyAddressDto: CreateCompanyAddressDto,
+  ): Promise<CompanyAddress> {
+    const companyAddress = this.companyAddressRepository.create(
+      createCompanyAddressDto,
+    );
+    return await this.companyAddressRepository.save(companyAddress);
   }
 
   async update(

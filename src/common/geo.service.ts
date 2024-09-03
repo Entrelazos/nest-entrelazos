@@ -26,7 +26,7 @@ export class GeoService {
 
   async createCity(createCityDto: CreateCityDTO) {
     const validate = await this.cityRepository.findOne({
-      where: { name: createCityDto.name, region_id: createCityDto.region_id },
+      where: { name: createCityDto.name, region_id: createCityDto.regionId },
     });
 
     if (validate) {
@@ -89,28 +89,15 @@ export class GeoService {
     return paginate<City>(queryBuilder, options);
   }
 
-  async getCountries(
-    limit = 10,
-    orderBy = 'name',
-    orderDirection = 'name',
-    page = 1,
-    search = '',
-  ): Promise<Pagination<Country>> {
-    const options: IPaginationOptions = { page, limit };
+  async getRegionsByCountry(countryId: number): Promise<Region[]> {
+    return this.regionRepository.find({ where: { country_id: countryId } });
+  }
 
-    const queryBuilder = this.countryRepository.createQueryBuilder('countries');
-    queryBuilder.leftJoinAndSelect('countries.role', 'role');
+  async getCountries(): Promise<Country[]> {
+    return this.countryRepository.find();
+  }
 
-    if (search != '') {
-      queryBuilder.andWhere(
-        `(countries.name LIKE '%${search}%' OR countries.code LIKE '%${search}%')`,
-      );
-    }
-
-    queryBuilder.orderBy(
-      `countries.${orderBy ?? 'id'}`,
-      orderDirection == 'DESC' ? 'DESC' : 'ASC',
-    );
-    return paginate<Country>(queryBuilder, options);
+  async getCitiesByRegion(regionId: number): Promise<City[]> {
+    return this.cityRepository.find({ where: { region_id: regionId } });
   }
 }
