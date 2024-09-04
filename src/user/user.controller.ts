@@ -10,6 +10,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
 import { UserService } from './services/user.service';
@@ -20,6 +21,9 @@ import { Company } from 'src/company/entities/company.entity';
 import { UserCompanyService } from './services/user-company.service';
 import { UserCompany } from './entities/user-company.entity';
 import { CreateUserCompanyDto } from './dto/create-user-company.dto';
+import { Roles } from 'src/guards/roles/roles.decorator';
+import { RolesGuard } from 'src/guards/roles/roles.guard';
+import { Role } from 'src/types/role.types';
 
 @Controller('user')
 export class UserController {
@@ -91,13 +95,14 @@ export class UserController {
     }
   }
 
-  @Post('role/assign')
-  async assignUserRole(@Body() assignUserRoleDTO: AssignUserRoleDTO) {
-    try {
-      return await this.userService.associateUserWithRole(assignUserRoleDTO);
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+  @Patch(':id/role/:roleId')
+  @Roles(Role.Admin)
+  async assignRoleToUser(
+    @Param('id') userId: number,
+    @Param('roleId') roleId: number,
+  ) {
+    await this.userService.assignRoleToUser(userId, roleId);
+    return { message: 'Role assigned successfully' };
   }
 
   /* User Companies endpoints */

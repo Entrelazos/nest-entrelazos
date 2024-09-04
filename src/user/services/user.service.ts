@@ -1,6 +1,6 @@
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 
 import { CreateUserDTO, UpdateUserDTO } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
@@ -16,31 +16,27 @@ import { AssignUserRoleDTO } from '../dto/user.role.dto';
 import * as bcrypt from 'bcrypt';
 import { UniquenessValidationUtil } from '../../util/uniqueness-validation.util';
 import { Company } from 'src/company/entities/company.entity';
+import { Social } from 'src/common/entities/social.entity';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
-    @InjectRepository(Role) private roleRepository: Repository<Role>,
-    @InjectRepository(City) private cityRepository: Repository<City>,
+    @InjectRepository(User) private usersRepository: Repository<User>,
+    @InjectRepository(Role) private rolesRepository: Repository<Role>,
+    @InjectRepository(City) private citiesRepository: Repository<City>,
+    @InjectRepository(Social) private socialRepository: Repository<Social>,
     @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
 
-  async associateUserWithRole(assignUserRoleDTO: AssignUserRoleDTO) {
-    const user = await this.userRepository.findOneBy({
-      id: assignUserRoleDTO.user_id,
+  async assignRoleToUser(userId: number, roleId: number): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
     });
-    const role = await this.roleRepository.findOneBy({
-      id: assignUserRoleDTO.role_id,
-    });
-
-    if (!user || !role) {
-      throw new Error('Not existing user or role.');
-    }
-
-    user.role = role;
-    return this.userRepository.save(user);
+    const role = await this.rolesRepository.findOne({ where: { id: roleId } });
+    user.roles.push(role);
+    await this.usersRepository.save(user);
   }
 
   async createRole(createRoleDto: CreateRoleDTO) {
@@ -53,8 +49,8 @@ export class UserService {
     if (validate) {
       throw new Error(`Role ${createRoleDto.role_name} exists`);
     }
-    const role = this.roleRepository.create(createRoleDto);
-    return await this.roleRepository.save(role);
+    const role = this.rolesRepository.create(createRoleDto);
+    return await this.rolesRepository.save(role);
   }
 
   async createUser(createUserDto: CreateUserDTO) {
@@ -63,7 +59,6 @@ export class UserService {
       createUserDto.password,
       saltRounds,
     );
-
     const validate = await this.uniquenessValidationUtil.validateUniqueness(
       'User',
       'email',
@@ -73,23 +68,31 @@ export class UserService {
     if (validate) {
       throw new Error(`The email ${createUserDto.email} is already in use`);
     }
-    const { city_id, role_id } = createUserDto;
-    const role = await this.roleRepository.findOneBy({
-      id: role_id,
-    });
-    if (!role) {
-      throw new Error('Not existing role.');
+    const { email, cityId, socialId, roleIds, ...rest } = createUserDto;
+
+    const social = socialId
+      ? await this.socialRepository.findOneBy({ id: socialId })
+      : null;
+
+    const roles = await this.rolesRepository.findBy({ id: In(roleIds) });
+    if (roles.length !== roleIds.length) {
+      throw new Error('Some roles not found');
     }
-    const city = await this.cityRepository.findOneBy({ id: city_id });
+
+    const city = await this.citiesRepository.findOneBy({ id: cityId });
     if (!city) {
       throw new Error('Not existing city.');
     }
-    const user = this.userRepository.create({
-      ...createUserDto,
+    const user = this.usersRepository.create({
+      email,
+      city,
+      social,
+      roles,
       password: hashedPassword,
+      ...rest,
     });
 
-    return await this.userRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 
   async getUsers(
@@ -101,14 +104,14 @@ export class UserService {
   ): Promise<Pagination<User>> {
     const options: IPaginationOptions = { page, limit };
 
-    const queryBuilder = this.userRepository.createQueryBuilder('users');
+    const queryBuilder = this.usersRepository.createQueryBuilder('users');
     queryBuilder.select([
       'users.cellphone',
       'users.email',
       'users.identification',
       'users.name',
     ]);
-    queryBuilder.leftJoinAndSelect('users.role', 'role');
+    queryBuilder.leftJoinAndSelect('users.roles', 'roles');
     queryBuilder.leftJoinAndSelect('users.city', 'city');
 
     if (search != '') {
@@ -125,34 +128,36 @@ export class UserService {
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDTO): Promise<User> {
-    const user = await this.userRepository.findOneByOrFail({ id });
-    return this.userRepository.save({
+    const user = await this.usersRepository.findOneByOrFail({ id });
+    return this.usersRepository.save({
       ...user,
       ...updateUserDto,
     });
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
-    return await this.userRepository.findOne({
+    return await this.usersRepository.findOne({
       where: { email },
       relations: [
         'companies',
         'companies.company',
         'companies.company.addresses',
-        'role',
+        'roles',
         'city',
       ],
     });
   }
 
   async findByRefreshToken(refreshToken: string): Promise<User | undefined> {
-    const user = await this.userRepository.findOne({ where: { refreshToken } });
+    const user = await this.usersRepository.findOne({
+      where: { refreshToken },
+    });
 
     return user;
   }
 
   async getUserCompanies(userId: number): Promise<Company[]> {
-    const user = await this.userRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { id: userId },
       relations: ['companies', 'companies.company'],
     });

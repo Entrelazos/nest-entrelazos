@@ -34,7 +34,7 @@ export class AuthService {
     }
 
     const payload = { email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '15d' });
     const refreshToken = uuidv4();
 
     delete user.password;

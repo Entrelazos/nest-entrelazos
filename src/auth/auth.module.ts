@@ -8,19 +8,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Role } from 'src/user/entities/role.entity';
 import { City } from 'src/common/entities/city.entity';
-import { Permission } from 'src/user/entities/permission.entity';
 import { UtilsModule } from 'src/util/utils.module';
+import { Social } from 'src/common/entities/social.entity';
+import { RolesGuard } from 'src/guards/roles/roles.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Role, Permission, City]),
+    TypeOrmModule.forFeature([User, Role, City, Social]),
     UtilsModule,
     JwtModule.register({
       secret: 'your-secret-key',
-      signOptions: { expiresIn: '15m' },
+      signOptions: { expiresIn: '15d' },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, JwtStrategy],
+  providers: [AuthService, UserService, JwtStrategy, RolesGuard],
+  exports: [AuthService],
 })
 export class AuthModule {}

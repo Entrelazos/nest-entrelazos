@@ -19,13 +19,17 @@ import { AuthGuard } from '@nestjs/passport';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { CreateCompanyAddressDto } from './dto/company-address.dto';
 import { CompanyAddress } from './entities/company-address.entity';
+import { RolesGuard } from 'src/guards/roles/roles.guard';
+import { Roles } from 'src/guards/roles/roles.decorator';
+import { Role } from 'src/types/role.types';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('companies')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Get()
+  @Roles(Role.Admin)
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 10,

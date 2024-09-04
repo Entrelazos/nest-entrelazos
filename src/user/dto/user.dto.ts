@@ -7,6 +7,7 @@ import {
   MinLength,
   MaxLength,
   Matches,
+  IsInt,
 } from 'class-validator';
 
 export class CreateUserDTO {
@@ -14,7 +15,12 @@ export class CreateUserDTO {
   readonly cellphone: string;
 
   @IsOptional()
-  readonly city_id: number;
+  @IsInt()
+  readonly cityId: number;
+
+  @IsOptional()
+  @IsInt()
+  socialId?: number;
 
   @IsNotEmpty()
   @IsEmail()
@@ -40,8 +46,8 @@ export class CreateUserDTO {
   readonly name: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  readonly role_id: number;
+  @IsInt({ each: true })
+  roleIds: number[];
 }
 
 export class UpdateUserDTO {

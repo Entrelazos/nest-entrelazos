@@ -56,7 +56,7 @@ export class AuthController {
       const { email } = user;
       // Generate a new access token
       const payload = { email };
-      const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+      const accessToken = this.jwtService.sign(payload, { expiresIn: '15d' });
 
       return { accessToken };
     } catch (error) {

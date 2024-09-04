@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Role } from './entities/role.entity';
 import { City } from 'src/common/entities/city.entity';
-import { Permission } from './entities/permission.entity';
 import { UtilsModule } from 'src/util/utils.module';
 import { UserCompanyService } from './services/user-company.service';
 import { UserCompany } from './entities/user-company.entity';
@@ -19,7 +18,6 @@ import { Social } from 'src/common/entities/social.entity';
     TypeOrmModule.forFeature([
       User,
       Role,
-      Permission,
       City,
       UserCompany,
       Company,
