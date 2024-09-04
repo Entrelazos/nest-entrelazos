@@ -29,7 +29,6 @@ export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Get()
-  @Roles(Role.Admin)
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 10,
