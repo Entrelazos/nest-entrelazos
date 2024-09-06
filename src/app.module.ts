@@ -15,6 +15,9 @@ import { UtilsModule } from './util/utils.module';
 import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
 import { ImageModule } from './image/image.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './guards/roles/roles.guard';
+import { JwtStrategy } from './auth/jwt.strategy';
 
 @Module({
   imports: [
