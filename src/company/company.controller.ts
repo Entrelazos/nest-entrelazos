@@ -35,9 +35,17 @@ export class CompanyController {
     @Query('orderBy') orderBy = 'name',
     @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
     @Query('search') search = '',
+    @Query('categoryIds') categoryIds: number[] = [],
   ): Promise<Pagination<Company>> {
     try {
-      const options = { page, limit, orderBy, orderDirection, search };
+      const options = {
+        page,
+        limit,
+        orderBy,
+        orderDirection,
+        search,
+        categoryIds,
+      };
       return await this.companyService.findAll(options);
     } catch (error) {
       throw new BadRequestException(error.message);

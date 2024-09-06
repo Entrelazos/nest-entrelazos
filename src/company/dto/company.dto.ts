@@ -1,7 +1,8 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 import { CreateCompanyAddressDto } from './company-address.dto';
 import { CreateUserCompanyDto } from 'src/user/dto/create-user-company.dto';
 import { CreateSocialDto } from 'src/common/dto/social.dto';
+import { Category } from 'src/category/entities/category.entity';
 
 export class CreateCompanyDto {
   @IsNotEmpty()
@@ -24,4 +25,8 @@ export class CreateCompanyDto {
 
   @IsOptional()
   readonly social: CreateSocialDto;
+
+  @IsOptional()
+  @IsInt({ each: true })
+  readonly categoryIds: number[];
 }

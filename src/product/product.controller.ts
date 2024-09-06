@@ -11,7 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { Category } from './entities/category.entity';
+import { Category } from 'src/category/entities/category.entity';
 import { Company } from 'src/company/entities/company.entity';
 
 @UseGuards(AuthGuard('jwt'))

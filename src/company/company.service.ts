@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
 import { CompanyAddress } from './entities/company-address.entity';
 import { CreateCompanyDto } from './dto/company.dto';
@@ -13,6 +13,7 @@ import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { CreateCompanyAddressDto } from './dto/company-address.dto';
 import { UserCompany } from 'src/user/entities/user-company.entity';
 import { Social } from 'src/common/entities/social.entity';
+import { Category } from 'src/category/entities/category.entity';
 
 @Injectable()
 export class CompanyService {
@@ -25,6 +26,8 @@ export class CompanyService {
     private readonly userCompanyRepository: Repository<UserCompany>,
     @InjectRepository(Social)
     private readonly socialRepository: Repository<Social>,
+    @InjectRepository(Category)
+    private readonly categoriesRepository: Repository<Category>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
@@ -35,23 +38,33 @@ export class CompanyService {
     orderBy: string;
     orderDirection: 'ASC' | 'DESC';
     search: string;
+    categoryIds: number[];
   }): Promise<Pagination<Company>> {
-    const { page, limit, orderBy, orderDirection, search } = options;
+    const { page, limit, orderBy, orderDirection, search, categoryIds } =
+      options;
 
     const queryBuilder = this.companyRepository
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.addresses', 'addresses')
       .leftJoinAndSelect('addresses.city', 'city')
       .leftJoinAndSelect('city.region', 'region')
-      .leftJoinAndSelect('region.country', 'country')
-      .orderBy(`company.${orderBy}`, orderDirection);
+      .leftJoinAndSelect('region.country', 'country');
 
+    if (categoryIds.length) {
+      queryBuilder
+        .leftJoinAndSelect('company.categories', 'categories')
+        .andWhere('categories.id IN (:...categoryIds)', { categoryIds });
+    }
+
+    // Apply search filter
     if (search) {
-      queryBuilder.where(`company.name LIKE :search`, {
+      queryBuilder.andWhere('company.name LIKE :search', {
         search: `%${search}%`,
       });
-      // Add other search conditions as needed
     }
+
+    // Apply ordering
+    queryBuilder.orderBy(`company.${orderBy}`, orderDirection);
 
     return await paginate<Company>(queryBuilder, { page, limit });
   }
@@ -92,12 +105,27 @@ export class CompanyService {
   }
 
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
-    const { name, type, nit, description, users, addresses, social } =
-      createCompanyDto;
+    const {
+      name,
+      type,
+      nit,
+      description,
+      users,
+      addresses,
+      social,
+      categoryIds,
+    } = createCompanyDto;
     let savedSocial: Social | undefined;
     if (social) {
       const socialNetworks = this.socialRepository.create(social);
       savedSocial = await this.socialRepository.save(socialNetworks);
+    }
+
+    const categories = await this.categoriesRepository.findBy({
+      id: In(categoryIds),
+    });
+    if (categories.length !== categoryIds.length) {
+      throw new Error('Some categories not found');
     }
 
     // Create company entity
@@ -107,6 +135,7 @@ export class CompanyService {
       nit,
       description,
       social: savedSocial,
+      categories,
     });
 
     // Save company first to ensure its id is generated

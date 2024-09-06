@@ -5,7 +5,7 @@ import { ProductController } from './product.controller';
 import { Product } from './entities/product.entity';
 import { UtilsModule } from 'src/util/utils.module';
 import { Company } from 'src/company/entities/company.entity';
-import { Category } from './entities/category.entity';
+import { Category } from 'src/category/entities/category.entity';
 
 @Module({
   imports: [
