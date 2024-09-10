@@ -9,9 +9,6 @@ export class CreateCompanyDto {
   readonly name: string;
 
   @IsNotEmpty()
-  readonly type: string;
-
-  @IsNotEmpty()
   readonly nit: string;
 
   @IsOptional()
@@ -21,7 +18,8 @@ export class CreateCompanyDto {
   readonly addresses: CreateCompanyAddressDto[];
 
   @IsOptional()
-  readonly users: CreateUserCompanyDto[];
+  @IsInt({ each: true })
+  readonly userIds: number[];
 
   @IsOptional()
   readonly social: CreateSocialDto;

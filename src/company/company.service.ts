@@ -14,6 +14,7 @@ import { CreateCompanyAddressDto } from './dto/company-address.dto';
 import { UserCompany } from 'src/user/entities/user-company.entity';
 import { Social } from 'src/common/entities/social.entity';
 import { Category } from 'src/category/entities/category.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class CompanyService {
@@ -28,6 +29,8 @@ export class CompanyService {
     private readonly socialRepository: Repository<Social>,
     @InjectRepository(Category)
     private readonly categoriesRepository: Repository<Category>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
@@ -105,16 +108,8 @@ export class CompanyService {
   }
 
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
-    const {
-      name,
-      type,
-      nit,
-      description,
-      users,
-      addresses,
-      social,
-      categoryIds,
-    } = createCompanyDto;
+    const { name, nit, description, userIds, addresses, social, categoryIds } =
+      createCompanyDto;
     let savedSocial: Social | undefined;
     if (social) {
       const socialNetworks = this.socialRepository.create(social);
@@ -131,7 +126,6 @@ export class CompanyService {
     // Create company entity
     const company = this.companyRepository.create({
       name,
-      type,
       nit,
       description,
       social: savedSocial,
@@ -154,16 +148,16 @@ export class CompanyService {
       await this.companyAddressRepository.save(companyAddresses);
     }
 
-    if (users?.length) {
-      // Create company address entities
-      const companyUsers = users.map((userData) =>
-        this.userCompanyRepository.create({
-          ...userData,
-          company: savedCompany,
-        }),
-      );
-      await this.userCompanyRepository.save(companyUsers);
+    const users = await this.usersRepository.findBy({
+      id: In(userIds),
+    });
+    if (users.length !== userIds.length) {
+      throw new Error('Some users not found');
     }
+    const companyUsers = users.map((user) =>
+      this.userCompanyRepository.create({ company: savedCompany, user }),
+    );
+    await this.userCompanyRepository.save(companyUsers);
 
     // Return created company
     return savedCompany;

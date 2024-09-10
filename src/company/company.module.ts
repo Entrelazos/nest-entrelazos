@@ -19,6 +19,7 @@ import { User } from 'src/user/entities/user.entity';
       UserCompany,
       Social,
       Category,
+      User,
     ]),
     UtilsModule,
   ],

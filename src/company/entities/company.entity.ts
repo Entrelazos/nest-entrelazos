@@ -23,9 +23,6 @@ export class Company extends BaseEntity {
   @Column({ unique: true })
   name: string;
 
-  @Column()
-  type: string;
-
   @Column({ unique: true })
   nit: string;
 
