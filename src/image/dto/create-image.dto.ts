@@ -6,7 +6,12 @@ import {
   IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ENTITY_TYPES, EntityType } from '../image.types';
+import {
+  ENTITY_TYPES,
+  EntityType,
+  IMAGE_TYPES,
+  ImageType,
+} from '../image.types';
 
 export class CreateImageDto {
   @IsString()
@@ -31,4 +36,10 @@ export class CreateImageDto {
       'entityType must be one of the following values: product, user, company',
   })
   entityType: EntityType;
+
+  @IsEnum(IMAGE_TYPES, {
+    message:
+      'imageType must be one of the following values: user_profile, company_profile, company_banner',
+  })
+  imageType: ImageType;
 }

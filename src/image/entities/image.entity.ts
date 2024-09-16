@@ -1,6 +1,11 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { EntityType, ENTITY_TYPES } from '../image.types';
+import {
+  EntityType,
+  ENTITY_TYPES,
+  IMAGE_TYPES,
+  ImageType,
+} from '../image.types';
 
 @Entity()
 export class Image extends BaseEntity {
@@ -24,4 +29,10 @@ export class Image extends BaseEntity {
     enum: ENTITY_TYPES,
   })
   entity_type: EntityType;
+
+  @Column({
+    type: 'enum',
+    enum: IMAGE_TYPES,
+  })
+  image_type: ImageType;
 }

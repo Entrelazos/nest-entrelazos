@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Image } from './entities/image.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { CreateImageDto } from './dto/create-image.dto';
-import { EntityType } from './image.types';
+import { EntityType, ImageType } from './image.types';
 import { User } from 'src/user/entities/user.entity';
 import { Company } from 'src/company/entities/company.entity';
 import * as fs from 'fs';
@@ -12,6 +16,10 @@ import * as path from 'path';
 
 @Injectable()
 export class ImageService {
+  private readonly uploadsDir =
+    process.env.NODE_ENV === 'development'
+      ? 'dist/uploads'
+      : '/var/www/uploads/';
   constructor(
     @InjectRepository(Image)
     private imageRepository: Repository<Image>,
@@ -27,79 +35,38 @@ export class ImageService {
     createImageDto: CreateImageDto,
     file: Express.Multer.File,
   ): Promise<Image> {
-    const { url, altText, description, entityId, entityType } = createImageDto;
+    const { url, altText, description, entityId, entityType, imageType } =
+      createImageDto;
 
-    let folderPath: string;
-    let imageName: string;
+    // Validate entity type
+    const validEntityTypes = ['product', 'user', 'company'];
+    if (!validEntityTypes.includes(entityType)) {
+      throw new BadRequestException('Invalid entity type');
+    }
+
     const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const fileExtension = path.extname(file.originalname);
     const sanitizedFileName = file.originalname.replace(/\s+/g, '-');
     const baseName = path.basename(sanitizedFileName, fileExtension);
 
-    switch (entityType) {
-      case 'product': {
-        const product = await this.productRepository.findOne({
-          where: { id: entityId },
-          relations: ['company'],
-        });
-        if (!product)
-          throw new NotFoundException(`Product with ID ${entityId} not found`);
-        const companyName = product.company.name.replace(/\s+/g, '_');
-        folderPath = path.join(
-          __dirname,
-          '..',
-          '..',
-          'images',
-          'products-images',
-          companyName,
-          product.id.toString(),
-        );
-        imageName = `${baseName}-${currentDate}${fileExtension}`;
-        break;
-      }
-      case 'user': {
-        const user = await this.userRepository.findOne({
-          where: {
-            id: entityId,
-          },
-        });
-        if (!user)
-          throw new NotFoundException(`User with ID ${entityId} not found`);
-        const userName = user.name.replace(/\s+/g, '_');
-        folderPath = path.join(
-          __dirname,
-          '..',
-          '..',
-          'images',
-          'user-images',
-          userName,
-          user.id.toString(),
-        );
-        imageName = `${baseName}-${currentDate}${fileExtension}`;
-        break;
-      }
-      case 'company': {
-        const company = await this.companyRepository.findOne({
-          where: { id: entityId },
-        });
-        if (!company)
-          throw new NotFoundException(`Company with ID ${entityId} not found`);
-        const companyName = company.name.replace(/\s+/g, '_');
-        folderPath = path.join(
-          __dirname,
-          '..',
-          '..',
-          'images',
-          'companies-images',
-          companyName,
-          company.id.toString(),
-        );
-        imageName = `${baseName}-${currentDate}${fileExtension}`;
-        break;
-      }
-      default:
-        throw new Error('Invalid entity type');
+    // Get entity data and build folder path
+    const entity = await this.getEntity(entityType, entityId);
+    if (!entity) {
+      throw new NotFoundException(
+        `${
+          entityType.charAt(0).toUpperCase() + entityType.slice(1)
+        } with ID ${entityId} not found`,
+      );
     }
+
+    const entityName = this.getEntityName(entity, entityType);
+    const folderPath = path.join(
+      this.uploadsDir,
+      `${entityType}-images`,
+      entityName,
+      entityId.toString(),
+    );
+    const imageName = `${baseName}-${currentDate}${fileExtension}`;
 
     // Ensure the directory exists
     fs.mkdirSync(folderPath, { recursive: true });
@@ -108,16 +75,69 @@ export class ImageService {
     const fullPath = path.join(folderPath, imageName);
     fs.writeFileSync(fullPath, file.buffer);
 
-    // Save the image record in the database
-    const image = this.imageRepository.create({
-      url: fullPath, // Save the full path or relative path as needed
-      alt_text: altText,
-      description,
-      entity_id: entityId,
-      entity_type: entityType,
-    });
+    const imageUrl = path.join(
+      `${entityType}-images`,
+      entityName,
+      entityId.toString(),
+      imageName,
+    );
 
-    return this.imageRepository.save(image);
+    // Check if the image already exists for the entity
+    const foundImage = await this.findOneImageByEntity(
+      entityId,
+      entityType,
+      imageType,
+    );
+
+    if (foundImage) {
+      // Update the existing image
+      foundImage.url = imageUrl;
+      foundImage.alt_text = altText;
+      foundImage.description = description;
+      foundImage.updated_at = new Date(); // Update timestamp
+      return this.imageRepository.save(foundImage); // Update the record
+    } else {
+      // Create a new image record
+      const newImage = this.imageRepository.create({
+        url: imageUrl,
+        alt_text: altText,
+        description,
+        entity_id: entityId,
+        entity_type: entityType,
+        image_type: imageType,
+      });
+
+      return this.imageRepository.save(newImage); // Insert new record
+    }
+  }
+
+  private async getEntity(entityType: string, entityId: number): Promise<any> {
+    switch (entityType) {
+      case 'product':
+        return this.productRepository.findOne({
+          where: { id: entityId },
+          relations: ['company'],
+        });
+      case 'user':
+        return this.userRepository.findOne({ where: { id: entityId } });
+      case 'company':
+        return this.companyRepository.findOne({ where: { id: entityId } });
+      default:
+        throw new BadRequestException('Invalid entity type');
+    }
+  }
+
+  private getEntityName(entity: any, entityType: string): string {
+    switch (entityType) {
+      case 'product':
+        return entity.company.name.replace(/\s+/g, '_');
+      case 'user':
+        return entity.name.replace(/\s+/g, '_');
+      case 'company':
+        return entity.name.replace(/\s+/g, '_');
+      default:
+        throw new BadRequestException('Invalid entity type');
+    }
   }
 
   async createImages(
@@ -170,5 +190,44 @@ export class ImageService {
       .andWhere('image.entity_type = :entityType', { entityType });
 
     return query.getMany();
+  }
+
+  async findOneImageByEntity(
+    entityId: number,
+    entityType: EntityType,
+    imageType: ImageType,
+  ): Promise<Image> {
+    const query = this.imageRepository.createQueryBuilder('image');
+
+    // Dynamically build the join based on entityType
+    switch (entityType) {
+      case 'product':
+        query.innerJoinAndSelect(
+          Product,
+          'product',
+          'image.entity_id = product.id',
+        );
+        break;
+      case 'user':
+        query.innerJoinAndSelect(User, 'user', 'image.entity_id = user.id');
+        break;
+      case 'company':
+        query.innerJoinAndSelect(
+          Company,
+          'company',
+          'image.entity_id = company.id',
+        );
+        break;
+      default:
+        throw new Error('Invalid entity type');
+    }
+
+    // Add filters to the query
+    query
+      .where('image.entity_id = :entityId', { entityId })
+      .andWhere('image.entity_type = :entityType', { entityType })
+      .andWhere('image.image_type = :imageType', { imageType });
+
+    return query.getOne();
   }
 }

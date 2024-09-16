@@ -3,11 +3,11 @@ import {
   Post,
   Body,
   Get,
-  Param,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
   UploadedFiles,
+  Query,
 } from '@nestjs/common';
 import { ImageService } from './image.service';
 import { Image } from './entities/image.entity';
@@ -73,10 +73,10 @@ export class ImageController {
     return images;
   }
 
-  @Get(':entityType/:entityId')
+  @Get('upload')
   async getImages(
-    @Param('entityId') entityId: number,
-    @Param('entityType') entityType: EntityType,
+    @Query('entityId') entityId: number,
+    @Query('entityType') entityType: EntityType,
   ): Promise<Image[]> {
     return this.imageService.findImagesByEntity(entityId, entityType);
   }
