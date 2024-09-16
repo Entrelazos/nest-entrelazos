@@ -15,9 +15,8 @@ import { UtilsModule } from './util/utils.module';
 import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
 import { ImageModule } from './image/image.module';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './guards/roles/roles.guard';
-import { JwtStrategy } from './auth/jwt.strategy';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -25,6 +24,14 @@ import { JwtStrategy } from './auth/jwt.strategy';
       load: [configLoader],
       validationSchema: envSchema,
     }),
+    ...(process.env.NODE_ENV === 'development'
+      ? [
+          ServeStaticModule.forRoot({
+            rootPath: join(__dirname, '..', 'uploads'),
+            serveRoot: '/uploads',
+          }),
+        ]
+      : []),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
