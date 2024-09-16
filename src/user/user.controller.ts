@@ -15,15 +15,14 @@ import {
 import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
 import { UserService } from './services/user.service';
 import { CreateRoleDTO } from './dto/role.dto';
-import { AssignUserRoleDTO } from './dto/user.role.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Company } from 'src/company/entities/company.entity';
 import { UserCompanyService } from './services/user-company.service';
 import { UserCompany } from './entities/user-company.entity';
 import { CreateUserCompanyDto } from './dto/create-user-company.dto';
 import { Roles } from 'src/guards/roles/roles.decorator';
-import { RolesGuard } from 'src/guards/roles/roles.guard';
 import { Role } from 'src/types/role.types';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller('user')
 export class UserController {
@@ -109,8 +108,20 @@ export class UserController {
   @Get(':id/companies')
   async getUserCompanies(
     @Param('id', ParseIntPipe) userId: number,
-  ): Promise<Company[]> {
-    return this.userCompanyService.getUserCompanies(userId);
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('orderBy') orderBy = 'name',
+    @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
+    @Query('search') search = '',
+  ): Promise<Pagination<Company>> {
+    const options = {
+      page,
+      limit,
+      orderBy,
+      orderDirection,
+      search,
+    };
+    return this.userCompanyService.getUserCompanies(userId, options);
   }
 
   @Post('/company')
