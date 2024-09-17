@@ -11,6 +11,7 @@ import { City } from 'src/common/entities/city.entity';
 import { UtilsModule } from 'src/util/utils.module';
 import { Social } from 'src/common/entities/social.entity';
 import { RolesGuard } from 'src/guards/roles/roles.guard';
+import { Company } from 'src/company/entities/company.entity';
 
 @Module({
   imports: [
