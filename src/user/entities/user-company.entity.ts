@@ -12,11 +12,11 @@ import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity({ name: 'user_company' })
 @Unique(['company', 'user'])
-export class UserCompany extends BaseEntity{
+export class UserCompany extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ default: 'Employee' })
   jobPosition: string;
 
   @ManyToOne(() => Company, (company) => company.users)
