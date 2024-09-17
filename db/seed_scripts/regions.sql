@@ -1,5 +1,6 @@
 INSERT INTO entrelazos.region (name, code, country_id) VALUES
 ('Amazonas', '91', 37),
+('Antioquia', '05', 37),
 ('Arauca', '81', 37),
 ('Atlántico', '08', 37),
 ('Bogotá D.C.', '11', 37),
