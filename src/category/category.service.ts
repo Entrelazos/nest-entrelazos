@@ -5,7 +5,6 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Product } from 'src/product/entities/product.entity';
 import { CreateCategoryDto } from './dto/category.dto';
 import { Category } from './entities/category.entity';
-import { Company } from 'src/company/entities/company.entity';
 import { IPaginationMeta, Pagination, paginate } from 'nestjs-typeorm-paginate';
 
 @Injectable()
@@ -15,8 +14,6 @@ export class CategoryService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-    @InjectRepository(Company)
-    private readonly companyRepository: Repository<Company>,
     // @InjectRepository(User) private userRepository: Repository<User>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,

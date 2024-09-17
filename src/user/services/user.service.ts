@@ -55,10 +55,6 @@ export class UserService {
 
   async createUser(createUserDto: CreateUserDTO) {
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
-      saltRounds,
-    );
     const validate = await this.uniquenessValidationUtil.validateUniqueness(
       'User',
       'email',
@@ -68,7 +64,10 @@ export class UserService {
     if (validate) {
       throw new Error(`The email ${createUserDto.email} is already in use`);
     }
-    const { email, cityId, socialId, roleIds, ...rest } = createUserDto;
+    const { email, cityId, socialId, roleIds, password, ...rest } =
+      createUserDto;
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const social = socialId
       ? await this.socialRepository.findOneBy({ id: socialId })

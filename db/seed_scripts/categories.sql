@@ -1,0 +1,16 @@
+INSERT INTO entrelazos.category (category_name) VALUES('Artesanías');
+INSERT INTO entrelazos.category (category_name) VALUES('Bebés');
+INSERT INTO entrelazos.category (category_name) VALUES('Calzado');
+INSERT INTO entrelazos.category (category_name) VALUES('Escolar');
+INSERT INTO entrelazos.category (category_name) VALUES('Formación');
+INSERT INTO entrelazos.category (category_name) VALUES('Juguetería');
+INSERT INTO entrelazos.category (category_name) VALUES('Libros');
+INSERT INTO entrelazos.category (category_name) VALUES('Mascotas');
+INSERT INTO entrelazos.category (category_name) VALUES('Música');
+INSERT INTO entrelazos.category (category_name) VALUES('Perfumería y Cosméticos');
+INSERT INTO entrelazos.category (category_name) VALUES('Postres y Alimentación');
+INSERT INTO entrelazos.category (category_name) VALUES('Regalos');
+INSERT INTO entrelazos.category (category_name) VALUES('Ropa');
+INSERT INTO entrelazos.category (category_name) VALUES('Salud');
+INSERT INTO entrelazos.category (category_name) VALUES('Tecnología');
+INSERT INTO entrelazos.category (category_name) VALUES('Otros');

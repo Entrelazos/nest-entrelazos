@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
 import { CompanyAddress } from './entities/company-address.entity';
 import { CreateCompanyDto } from './dto/company.dto';
@@ -13,6 +13,8 @@ import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { CreateCompanyAddressDto } from './dto/company-address.dto';
 import { UserCompany } from 'src/user/entities/user-company.entity';
 import { Social } from 'src/common/entities/social.entity';
+import { Category } from 'src/category/entities/category.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class CompanyService {
@@ -25,6 +27,10 @@ export class CompanyService {
     private readonly userCompanyRepository: Repository<UserCompany>,
     @InjectRepository(Social)
     private readonly socialRepository: Repository<Social>,
+    @InjectRepository(Category)
+    private readonly categoriesRepository: Repository<Category>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
   ) {}
@@ -35,23 +41,33 @@ export class CompanyService {
     orderBy: string;
     orderDirection: 'ASC' | 'DESC';
     search: string;
+    categoryIds: number[];
   }): Promise<Pagination<Company>> {
-    const { page, limit, orderBy, orderDirection, search } = options;
+    const { page, limit, orderBy, orderDirection, search, categoryIds } =
+      options;
 
     const queryBuilder = this.companyRepository
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.addresses', 'addresses')
       .leftJoinAndSelect('addresses.city', 'city')
       .leftJoinAndSelect('city.region', 'region')
-      .leftJoinAndSelect('region.country', 'country')
-      .orderBy(`company.${orderBy}`, orderDirection);
+      .leftJoinAndSelect('region.country', 'country');
 
+    if (categoryIds.length) {
+      queryBuilder
+        .leftJoinAndSelect('company.categories', 'categories')
+        .andWhere('categories.id IN (:...categoryIds)', { categoryIds });
+    }
+
+    // Apply search filter
     if (search) {
-      queryBuilder.where(`company.name LIKE :search`, {
+      queryBuilder.andWhere('company.name LIKE :search', {
         search: `%${search}%`,
       });
-      // Add other search conditions as needed
     }
+
+    // Apply ordering
+    queryBuilder.orderBy(`company.${orderBy}`, orderDirection);
 
     return await paginate<Company>(queryBuilder, { page, limit });
   }
@@ -92,7 +108,7 @@ export class CompanyService {
   }
 
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
-    const { name, type, nit, description, users, addresses, social } =
+    const { name, nit, description, userIds, addresses, social, categoryIds } =
       createCompanyDto;
     let savedSocial: Social | undefined;
     if (social) {
@@ -100,13 +116,20 @@ export class CompanyService {
       savedSocial = await this.socialRepository.save(socialNetworks);
     }
 
+    const categories = await this.categoriesRepository.findBy({
+      id: In(categoryIds),
+    });
+    if (categories.length !== categoryIds.length) {
+      throw new Error('Some categories not found');
+    }
+
     // Create company entity
     const company = this.companyRepository.create({
       name,
-      type,
       nit,
       description,
       social: savedSocial,
+      categories,
     });
 
     // Save company first to ensure its id is generated
@@ -125,16 +148,16 @@ export class CompanyService {
       await this.companyAddressRepository.save(companyAddresses);
     }
 
-    if (users?.length) {
-      // Create company address entities
-      const companyUsers = users.map((userData) =>
-        this.userCompanyRepository.create({
-          ...userData,
-          company: savedCompany,
-        }),
-      );
-      await this.userCompanyRepository.save(companyUsers);
+    const users = await this.usersRepository.findBy({
+      id: In(userIds),
+    });
+    if (users.length !== userIds.length) {
+      throw new Error('Some users not found');
     }
+    const companyUsers = users.map((user) =>
+      this.userCompanyRepository.create({ company: savedCompany, user }),
+    );
+    await this.userCompanyRepository.save(companyUsers);
 
     // Return created company
     return savedCompany;

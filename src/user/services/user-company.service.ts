@@ -6,6 +6,7 @@ import { Company } from 'src/company/entities/company.entity';
 import { UserCompany } from '../entities/user-company.entity';
 import { CreateUserCompanyDto } from '../dto/create-user-company.dto';
 import { CompanyService } from 'src/company/company.service';
+import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UserCompanyService {
@@ -16,17 +17,42 @@ export class UserCompanyService {
     private userCompanyRepository: Repository<UserCompany>,
     private readonly companyService: CompanyService,
   ) {}
-  async getUserCompanies(userId: number): Promise<Company[]> {
-    const user = await this.userRepository.findOne({
+
+  async getUserCompanies(
+    userId: number,
+    options: {
+      page: number;
+      limit: number;
+      orderBy: string;
+      orderDirection: 'ASC' | 'DESC';
+      search: string;
+    },
+  ): Promise<Pagination<Company>> {
+    const userExists = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['companies', 'companies.company'],
     });
 
-    if (!user) {
-      throw new NotFoundException(`User company with ID ${userId} not found`);
+    if (!userExists) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    return user.companies.map((userCompany) => userCompany.company);
+    // Create a query builder for Company entities
+    const queryBuilder = this.companyRepository
+      .createQueryBuilder('company')
+      .leftJoinAndSelect('company.addresses', 'addresses')
+      .leftJoinAndSelect('addresses.city', 'city')
+      .leftJoinAndSelect('city.region', 'region')
+      .leftJoinAndSelect('region.country', 'country')
+      .innerJoinAndSelect('company.categories', 'categories')
+      .innerJoin(
+        'user_company',
+        'userCompany',
+        'userCompany.companyId = company.id',
+      )
+      .where('userCompany.userId = :userId', { userId });
+
+    // Paginate the results
+    return await paginate<Company>(queryBuilder, options);
   }
 
   async createUserCompany(

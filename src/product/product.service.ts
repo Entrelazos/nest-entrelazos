@@ -4,7 +4,7 @@ import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/product.dto';
-import { Category } from './entities/category.entity';
+import { Category } from 'src/category/entities/category.entity';
 import { Company } from 'src/company/entities/company.entity';
 import { IPaginationMeta, Pagination, paginate } from 'nestjs-typeorm-paginate';
 

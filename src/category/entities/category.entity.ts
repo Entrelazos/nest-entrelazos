@@ -1,6 +1,17 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Product } from 'src/product/entities/product.entity';
 import { BaseEntity } from 'src/common/entities/base.entity';
+import { Company } from 'src/company/entities/company.entity';
+import { Role } from 'src/types/role.types';
 
 @Entity()
 export class Category extends BaseEntity {
@@ -12,4 +23,8 @@ export class Category extends BaseEntity {
 
   @OneToMany(() => Product, (product) => product.category)
   products?: Product[];
+
+  @ManyToMany(() => Company, (company) => company.categories)
+  @JoinTable({ name: 'company_category' })
+  companies: Company[];
 }

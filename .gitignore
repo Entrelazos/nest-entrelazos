@@ -37,3 +37,6 @@ lerna-debug.log*
 
 # Ignore ecosystem file for pm2 deployment in prod
 ecosystem.config.js
+
+# Dev upload folder
+uploads/
