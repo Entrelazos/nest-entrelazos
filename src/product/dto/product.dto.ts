@@ -5,6 +5,9 @@ export class CreateProductDto {
   readonly product_name: string;
 
   @IsNotEmpty()
+  readonly productDescription: string;
+
+  @IsNotEmpty()
   @IsBoolean()
   readonly is_service: boolean;
 

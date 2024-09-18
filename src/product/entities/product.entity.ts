@@ -18,6 +18,9 @@ export class Product extends BaseEntity {
   product_name: string;
 
   @Column()
+  product_description: string;
+
+  @Column()
   is_service: boolean;
 
   @Column()

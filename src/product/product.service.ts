@@ -40,7 +40,8 @@ export class ProductService {
   }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const { category_id, company_id, ...productData } = createProductDto;
+    const { category_id, company_id, productDescription, ...productData } =
+      createProductDto;
 
     const category = await this.categoryRepository.findOneOrFail({
       where: { id: category_id },
@@ -51,6 +52,7 @@ export class ProductService {
 
     const product = this.productRepository.create({
       ...productData,
+      product_description: productDescription,
       category,
       company,
     });
