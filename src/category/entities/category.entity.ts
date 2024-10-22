@@ -21,10 +21,11 @@ export class Category extends BaseEntity {
   @Column()
   category_name: string;
 
-  @OneToMany(() => Product, (product) => product.category)
-  products?: Product[];
-
   @ManyToMany(() => Company, (company) => company.categories)
   @JoinTable({ name: 'company_category' })
   companies: Company[];
+
+  @ManyToMany(() => Product, (product) => product.categories)
+  @JoinTable({ name: 'product_category' })
+  products: Product[];
 }

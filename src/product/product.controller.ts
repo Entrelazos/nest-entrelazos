@@ -6,6 +6,8 @@ import {
   UseGuards,
   BadRequestException,
   Query,
+  Body,
+  Post,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ProductService } from './product.service';
@@ -13,11 +15,19 @@ import { Product } from './entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Category } from 'src/category/entities/category.entity';
 import { Company } from 'src/company/entities/company.entity';
+import { CreateProductDto } from './dto/product.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
+
+  @Post('bulk')
+  async createMany(
+    @Body() createProductDtos: CreateProductDto[],
+  ): Promise<Product[]> {
+    return this.productService.createMany(createProductDtos);
+  }
 
   @Get('/byCompany/:id')
   async getProductsByCompany(

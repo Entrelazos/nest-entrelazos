@@ -25,8 +25,7 @@ export class CreateProductDto {
   readonly price: number;
 
   @IsNotEmpty()
-  @IsInt()
-  readonly category_id: number;
+  readonly category_ids: number[];
 
   @IsNotEmpty()
   @IsInt()

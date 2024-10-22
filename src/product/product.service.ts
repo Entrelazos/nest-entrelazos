@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/product.dto';
 import { Category } from 'src/category/entities/category.entity';
@@ -39,25 +39,42 @@ export class ProductService {
     return product;
   }
 
-  async create(createProductDto: CreateProductDto): Promise<Product> {
-    const { category_id, company_id, productDescription, ...productData } =
-      createProductDto;
+  async createMany(createProductDtos: CreateProductDto[]): Promise<Product[]> {
+    const savedProducts: Product[] = [];
 
-    const category = await this.categoryRepository.findOneOrFail({
-      where: { id: category_id },
-    });
-    const company = await this.companyRepository.findOneOrFail({
-      where: { id: company_id },
-    });
+    for (const createProductDto of createProductDtos) {
+      const { category_ids, company_id, productDescription, ...productData } =
+        createProductDto;
 
-    const product = this.productRepository.create({
-      ...productData,
-      product_description: productDescription,
-      category,
-      company,
-    });
+      // Find the categories for each product (assuming category_ids is an array)
+      const categories = await this.categoryRepository.findBy({
+        id: In(category_ids),
+      });
 
-    return await this.productRepository.save(product);
+      if (categories.length !== category_ids.length) {
+        throw new Error('Some categories could not be found');
+      }
+
+      // Find company for each product
+      const company = await this.companyRepository.findOneOrFail({
+        where: { id: company_id },
+      });
+
+      // Create product entity
+      const product = this.productRepository.create({
+        ...productData,
+        product_description: productDescription, // Rename field
+        categories, // Now it's an array of categories
+        company,
+      });
+
+      // Save product
+      const savedProduct = await this.productRepository.save(product);
+      savedProducts.push(savedProduct);
+    }
+
+    // Return array of saved products
+    return savedProducts;
   }
 
   async update(
