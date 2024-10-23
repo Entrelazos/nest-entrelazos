@@ -3,10 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
 import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { Product } from './entities/product.entity';
-import { CreateProductDto } from './dto/product.dto';
+import { CreateProductsDto, ProductDto } from './dto/product.dto';
 import { Category } from 'src/category/entities/category.entity';
 import { Company } from 'src/company/entities/company.entity';
 import { IPaginationMeta, Pagination, paginate } from 'nestjs-typeorm-paginate';
+import { ImageService } from 'src/image/image.service';
+import { CreateImageDto } from 'src/image/dto/create-image.dto';
+import { EntityTypeEnum, ImageTypeEnum } from 'src/image/image.types';
 
 @Injectable()
 export class ProductService {
@@ -17,6 +20,7 @@ export class ProductService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
+    private readonly imageService: ImageService,
     // @InjectRepository(User) private userRepository: Repository<User>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
@@ -39,14 +43,19 @@ export class ProductService {
     return product;
   }
 
-  async createMany(createProductDtos: CreateProductDto[]): Promise<Product[]> {
+  async createMany(createProductDtos: ProductDto[]): Promise<Product[]> {
     const savedProducts: Product[] = [];
 
     for (const createProductDto of createProductDtos) {
-      const { category_ids, company_id, productDescription, ...productData } =
-        createProductDto;
+      const {
+        category_ids,
+        company_id,
+        productDescription,
+        files,
+        ...productData
+      } = createProductDto;
 
-      // Find the categories for each product (assuming category_ids is an array)
+      // Find categories
       const categories = await this.categoryRepository.findBy({
         id: In(category_ids),
       });
@@ -55,7 +64,7 @@ export class ProductService {
         throw new Error('Some categories could not be found');
       }
 
-      // Find company for each product
+      // Find company
       const company = await this.companyRepository.findOneOrFail({
         where: { id: company_id },
       });
@@ -64,26 +73,34 @@ export class ProductService {
       const product = this.productRepository.create({
         ...productData,
         product_description: productDescription, // Rename field
-        categories, // Now it's an array of categories
+        categories, // Array of categories
         company,
       });
 
       // Save product
       const savedProduct = await this.productRepository.save(product);
       savedProducts.push(savedProduct);
+      if (files.length) {
+        files.map((file) => {
+          const imageToUpload: CreateImageDto = {
+            entityId: product.id,
+            entityType: EntityTypeEnum.Product,
+            imageType: ImageTypeEnum.ProductImage,
+            altText: file.originalname,
+            description: product.product_name,
+          };
+          this.imageService.createImage(imageToUpload, file);
+        });
+      }
     }
 
-    // Return array of saved products
     return savedProducts;
   }
 
-  async update(
-    id: number,
-    updateProductDto: CreateProductDto,
-  ): Promise<Product> {
-    await this.productRepository.update(id, updateProductDto);
-    return this.productRepository.findOne({ where: { id } });
-  }
+  // async update(id: number, products: ProductDto[]): Promise<Product> {
+  //   await this.productRepository.update(id, products);
+  //   return this.productRepository.findOne({ where: { id } });
+  // }
 
   async remove(id: number): Promise<void> {
     await this.productRepository.delete(id);
