@@ -23,7 +23,7 @@ import { RolesGuard } from 'src/guards/roles/roles.guard';
 import { Roles } from 'src/guards/roles/roles.decorator';
 import { Role } from 'src/types/role.types';
 
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+// @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('companies')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}

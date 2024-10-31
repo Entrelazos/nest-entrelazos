@@ -112,16 +112,16 @@ export class ProductService {
     limit = 10,
     orderBy = 'id', // Default orderBy column
     orderDirection: 'ASC' | 'DESC' = 'ASC', // Default order direction
-  ): Promise<Pagination<Company>> {
+  ): Promise<Pagination<Product>> {
     const options = { page, limit };
-    const queryBuilder: SelectQueryBuilder<Company> =
-      this.companyRepository.createQueryBuilder('company');
-    queryBuilder
-      .where('company.id = :companyId', { companyId })
-      .leftJoinAndSelect('company.products', 'products')
-      .orderBy(`company.${orderBy}`, orderDirection);
+    const queryBuilder: SelectQueryBuilder<Product> =
+      this.productRepository.createQueryBuilder('product');
 
-    return await paginate<Company>(queryBuilder, options);
+    queryBuilder
+      .where('product.company_id = :companyId', { companyId })
+      .orderBy(`product.${orderBy}`, orderDirection);
+
+    return await paginate<Product>(queryBuilder, options);
   }
 
   async getCategoryWithProducts(
