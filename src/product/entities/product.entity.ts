@@ -5,11 +5,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Category } from 'src/category/entities/category.entity';
 import { Company } from 'src/company/entities/company.entity';
 import { BaseEntity } from 'src/common/entities/base.entity';
+import { ProductAttributes } from './product-attributes.entity';
 
 @Entity()
 export class Product extends BaseEntity {
@@ -45,4 +47,10 @@ export class Product extends BaseEntity {
   @ManyToMany(() => Category, (category) => category.products)
   @JoinTable({ name: 'product_category' })
   categories: Category[];
+
+  // ✅ Alternative: Linking to a separate table (if needed)
+  @OneToOne(() => ProductAttributes, (attributes) => attributes.product, {
+    cascade: true,
+  })
+  attributes: ProductAttributes;
 }

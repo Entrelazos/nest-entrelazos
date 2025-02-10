@@ -87,4 +87,15 @@ export class ProductController {
       throw new BadRequestException(error.message);
     }
   }
+
+  @Get(':id')
+  async getSingleProduct(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Product> {
+    try {
+      return await this.productService.findOne(id);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 }

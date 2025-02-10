@@ -39,7 +39,7 @@ export class CreateImageDto {
 
   @IsEnum(IMAGE_TYPES, {
     message:
-      'imageType must be one of the following values: user_profile, company_profile, company_banner',
+      'imageType must be one of the following values: user_profile, company_profile, company_banner, product_image',
   })
   imageType: ImageType;
 }
