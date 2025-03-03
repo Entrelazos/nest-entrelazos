@@ -1,8 +1,22 @@
-import { IsNotEmpty, IsBoolean, IsNumber, Min, IsInt } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsBoolean,
+  IsNumber,
+  Min,
+  IsInt,
+  IsArray,
+  IsString,
+} from 'class-validator';
 
-export class CreateProductDto {
+// Individual Product DTO
+export class ProductDto {
   @IsNotEmpty()
+  @IsString()
   readonly product_name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly productDescription: string;
 
   @IsNotEmpty()
   @IsBoolean()
@@ -23,9 +37,19 @@ export class CreateProductDto {
 
   @IsNotEmpty()
   @IsInt()
-  readonly category_id: number;
+  readonly company_id: number;
 
   @IsNotEmpty()
-  @IsInt()
-  readonly company_id: number;
+  @IsArray()
+  @IsInt({ each: true })
+  readonly category_ids: number[];
+
+  readonly files?: Express.Multer.File[];
+}
+
+// Wrapper DTO for bulk creation
+export class CreateProductsDto {
+  @IsNotEmpty()
+  @IsArray()
+  readonly products: ProductDto[];
 }

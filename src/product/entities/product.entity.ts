@@ -2,6 +2,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -16,6 +18,9 @@ export class Product extends BaseEntity {
 
   @Column()
   product_name: string;
+
+  @Column()
+  product_description: string;
 
   @Column()
   is_service: boolean;
@@ -33,11 +38,11 @@ export class Product extends BaseEntity {
   })
   price: number;
 
-  @ManyToOne(() => Category, (category) => category.products)
-  @JoinColumn({ name: 'category_id', referencedColumnName: 'id' })
-  category: Category;
-
   @ManyToOne(() => Company, (company) => company.products)
   @JoinColumn({ name: 'company_id', referencedColumnName: 'id' })
   company: Company;
+
+  @ManyToMany(() => Category, (category) => category.products)
+  @JoinTable({ name: 'product_category' })
+  categories: Category[];
 }
