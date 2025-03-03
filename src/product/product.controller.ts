@@ -20,11 +20,11 @@ import { Company } from 'src/company/entities/company.entity';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { CreateProductsDto } from './dto/product.dto';
 
-@UseGuards(AuthGuard('jwt'))
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(AnyFilesInterceptor())
   @Post('bulk')
   async createMany(
@@ -53,7 +53,7 @@ export class ProductController {
     @Query('limit') limit = 10,
     @Query('orderBy') orderBy = 'id',
     @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
-  ): Promise<Pagination<Company>> {
+  ): Promise<Pagination<Product>> {
     try {
       return await this.productService.getProductsByCompany(
         companyId,
@@ -83,6 +83,17 @@ export class ProductController {
         orderBy,
         orderDirection,
       );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Get(':id')
+  async getSingleProduct(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Product> {
+    try {
+      return await this.productService.findOne(id);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

@@ -112,24 +112,24 @@ export class ProductService {
     limit = 10,
     orderBy = 'id', // Default orderBy column
     orderDirection: 'ASC' | 'DESC' = 'ASC', // Default order direction
-  ): Promise<Pagination<Company>> {
+  ): Promise<Pagination<Product>> {
     const options = { page, limit };
-    const queryBuilder: SelectQueryBuilder<Company> =
-      this.companyRepository.createQueryBuilder('company');
-    queryBuilder
-      .where('company.id = :companyId', { companyId })
-      .leftJoinAndSelect('company.products', 'products')
-      .orderBy(`company.${orderBy}`, orderDirection);
+    const queryBuilder: SelectQueryBuilder<Product> =
+      this.productRepository.createQueryBuilder('product');
 
-    return await paginate<Company>(queryBuilder, options);
+    queryBuilder
+      .where('product.company_id = :companyId', { companyId })
+      .orderBy(`product.${orderBy}`, orderDirection);
+
+    return await paginate<Product>(queryBuilder, options);
   }
 
   async getCategoryWithProducts(
     categoryId: number,
     page = 1,
     limit = 10,
-    orderBy = 'id', // Default orderBy column
-    orderDirection: 'ASC' | 'DESC' = 'ASC', // Default order direction
+    orderBy = 'id',
+    orderDirection: 'ASC' | 'DESC' = 'ASC',
   ): Promise<Pagination<Category>> {
     const queryBuilder: SelectQueryBuilder<Category> =
       this.categoryRepository.createQueryBuilder('category');
@@ -138,6 +138,13 @@ export class ProductService {
       .where('category.id = :id', { id: categoryId })
       .leftJoinAndSelect('category.products', 'products')
       .leftJoinAndSelect('products.company', 'company')
+      .leftJoinAndMapMany(
+        'products.images',
+        'image',
+        'images',
+        'images.entity_id = products.id AND images.entity_type = :entityType',
+        { entityType: 'product' },
+      )
       .orderBy(`category.${orderBy}`, orderDirection);
 
     return await paginate<Category>(queryBuilder, {

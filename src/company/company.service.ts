@@ -51,7 +51,14 @@ export class CompanyService {
       .leftJoinAndSelect('company.addresses', 'addresses')
       .leftJoinAndSelect('addresses.city', 'city')
       .leftJoinAndSelect('city.region', 'region')
-      .leftJoinAndSelect('region.country', 'country');
+      .leftJoinAndSelect('region.country', 'country')
+      .leftJoinAndMapMany(
+        'company.images',
+        'image',
+        'images',
+        'images.entity_id = company.id AND images.entity_type = :entityType',
+        { entityType: 'company' },
+      );
 
     if (categoryIds.length) {
       queryBuilder

@@ -8,7 +8,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CategoryService } from './category.service';
 import { Category } from './entities/category.entity';
 
-@UseGuards(AuthGuard('jwt'))
+// @UseGuards(AuthGuard('jwt'))
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
