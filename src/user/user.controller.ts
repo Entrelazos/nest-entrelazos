@@ -41,7 +41,7 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   async getUser(@Query('email') email: string) {
     try {
       return await this.userService.findByEmail(email);
@@ -51,7 +51,7 @@ export class UserController {
   }
 
   @Get('/list')
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   async getUsers(
     @Query('limit') limit: number,
     @Query('order') orderBy: string,
