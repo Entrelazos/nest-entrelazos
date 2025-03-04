@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
 import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { Product } from './entities/product.entity';
-import { CreateProductsDto, ProductDto } from './dto/product.dto';
+import { ProductDto } from './dto/product.dto';
 import { Category } from 'src/category/entities/category.entity';
 import { Company } from 'src/company/entities/company.entity';
-import { IPaginationMeta, Pagination, paginate } from 'nestjs-typeorm-paginate';
+import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { ImageService } from 'src/image/image.service';
 import { CreateImageDto } from 'src/image/dto/create-image.dto';
 import { EntityTypeEnum, ImageTypeEnum } from 'src/image/image.types';
@@ -33,7 +33,7 @@ export class ProductService {
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['company'],
+      relations: ['company', 'categories'],
     });
 
     if (!product) {
@@ -95,6 +95,71 @@ export class ProductService {
     }
 
     return savedProducts;
+  }
+
+  async updateOne(id: number, updateProductDto: ProductDto): Promise<Product> {
+    const {
+      category_ids,
+      company_id,
+      productDescription,
+      files,
+      ...productData
+    } = updateProductDto;
+
+    // Find the existing product
+    const product = await this.productRepository.findOne({
+      where: { id },
+      relations: ['categories', 'company'],
+    });
+
+    if (!product) {
+      throw new Error(`Product with ID ${id} not found`);
+    }
+
+    // Find and validate categories
+    if (category_ids) {
+      const categories = await this.categoryRepository.findBy({
+        id: In(category_ids),
+      });
+
+      if (categories.length !== category_ids.length) {
+        throw new Error('Some categories could not be found');
+      }
+
+      product.categories = categories;
+    }
+
+    // Find and validate company
+    if (company_id) {
+      const company = await this.companyRepository.findOneOrFail({
+        where: { id: company_id },
+      });
+      product.company = company;
+    }
+
+    // Update product fields
+    product.product_description =
+      productDescription || product.product_description;
+    Object.assign(product, productData);
+
+    // Save updated product
+    const updatedProduct = await this.productRepository.save(product);
+
+    // Handle file updates (new images)
+    if (files?.length) {
+      for (const file of files) {
+        const imageToUpload: CreateImageDto = {
+          entityId: updatedProduct.id,
+          entityType: EntityTypeEnum.Product,
+          imageType: ImageTypeEnum.ProductImage,
+          altText: file.originalname,
+          description: updatedProduct.product_name,
+        };
+        await this.imageService.createImage(imageToUpload, file);
+      }
+    }
+
+    return updatedProduct;
   }
 
   // async update(id: number, products: ProductDto[]): Promise<Product> {

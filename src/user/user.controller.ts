@@ -9,13 +9,13 @@ import {
   Put,
   Delete,
   Query,
-  UseGuards,
+  // UseGuards,
   Patch,
 } from '@nestjs/common';
 import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
 import { UserService } from './services/user.service';
 import { CreateRoleDTO } from './dto/role.dto';
-import { AuthGuard } from '@nestjs/passport';
+// import { AuthGuard } from '@nestjs/passport';
 import { Company } from 'src/company/entities/company.entity';
 import { UserCompanyService } from './services/user-company.service';
 import { UserCompany } from './entities/user-company.entity';

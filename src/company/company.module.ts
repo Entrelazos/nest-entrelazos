@@ -8,7 +8,6 @@ import { CompanyAddress } from './entities/company-address.entity';
 import { UserCompany } from 'src/user/entities/user-company.entity';
 import { Social } from 'src/common/entities/social.entity';
 import { Category } from 'src/category/entities/category.entity';
-import { Product } from 'src/product/entities/product.entity';
 import { User } from 'src/user/entities/user.entity';
 
 @Module({

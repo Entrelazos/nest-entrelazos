@@ -12,7 +12,6 @@ import {
   Pagination,
   paginate,
 } from 'nestjs-typeorm-paginate';
-import { AssignUserRoleDTO } from '../dto/user.role.dto';
 import * as bcrypt from 'bcrypt';
 import { UniquenessValidationUtil } from '../../util/uniqueness-validation.util';
 import { Company } from 'src/company/entities/company.entity';

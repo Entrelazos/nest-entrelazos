@@ -10,15 +10,15 @@ import {
   Post,
   UploadedFiles,
   UseInterceptors,
+  Put,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Category } from 'src/category/entities/category.entity';
-import { Company } from 'src/company/entities/company.entity';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { CreateProductsDto } from './dto/product.dto';
+import { CreateProductsDto, ProductDto } from './dto/product.dto';
 
 @Controller('products')
 export class ProductController {
@@ -65,6 +65,28 @@ export class ProductController {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('/:id')
+  @UseInterceptors(AnyFilesInterceptor()) // Allows file uploads
+  async updateOne(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() body: any, // Use `any` because we need to manually parse `FormData`
+  ) {
+    // Manually parse boolean and number fields
+    const updateProductDto: ProductDto = {
+      ...body,
+      is_service: body.is_service === 'true', // Convert string to boolean
+      is_public: body.is_public === 'true',
+      is_approved: body.is_approved === 'true',
+      price: parseFloat(body.price), // Convert string to number
+      company_id: parseInt(body.company_id, 10), // Convert string to integer
+      category_ids: body.category_ids?.map((id: string) => parseInt(id, 10)), // Convert array of strings to numbers
+    };
+
+    return this.productService.updateOne(id, { ...updateProductDto, files });
   }
 
   @Get('/byCategory/:id')

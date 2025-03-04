@@ -1,10 +1,10 @@
 import {
   Controller,
   Get,
-  UseGuards,
+  // UseGuards,
   BadRequestException,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+// import { AuthGuard } from '@nestjs/passport';
 import { CategoryService } from './category.service';
 import { Category } from './entities/category.entity';
 
