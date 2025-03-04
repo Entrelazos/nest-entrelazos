@@ -84,6 +84,8 @@ export class ProductController {
       price: parseFloat(body.price), // Convert string to number
       company_id: parseInt(body.company_id, 10), // Convert string to integer
       category_ids: body.category_ids?.map((id: string) => parseInt(id, 10)), // Convert array of strings to numbers
+      existingImages:
+        body.existingImages?.map((id: string) => parseInt(id, 10)) || [],
     };
 
     return this.productService.updateOne(id, { ...updateProductDto, files });

@@ -6,6 +6,7 @@ import {
   IsInt,
   IsArray,
   IsString,
+  IsOptional,
 } from 'class-validator';
 
 // Individual Product DTO
@@ -45,6 +46,11 @@ export class ProductDto {
   readonly category_ids: number[];
 
   readonly files?: Express.Multer.File[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true }) // ✅ Ensure all values are integers
+  readonly existingImages?: number[];
 }
 
 // Wrapper DTO for bulk creation

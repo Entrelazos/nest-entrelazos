@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { Image } from './entities/image.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { CreateImageDto } from './dto/create-image.dto';
-import { EntityType, ImageType } from './image.types';
+import { EntityType, EntityTypeEnum, ImageType } from './image.types';
 import { User } from 'src/user/entities/user.entity';
 import { Company } from 'src/company/entities/company.entity';
 import * as fs from 'fs';
@@ -87,6 +87,7 @@ export class ImageService {
       entityId,
       entityType,
       imageType,
+      imageUrl,
     );
 
     if (foundImage) {
@@ -196,6 +197,7 @@ export class ImageService {
     entityId: number,
     entityType: EntityType,
     imageType: ImageType,
+    imageUrl?: string,
   ): Promise<Image> {
     const query = this.imageRepository.createQueryBuilder('image');
 
@@ -226,8 +228,37 @@ export class ImageService {
     query
       .where('image.entity_id = :entityId', { entityId })
       .andWhere('image.entity_type = :entityType', { entityType })
-      .andWhere('image.image_type = :imageType', { imageType });
+      .andWhere('image.image_type = :imageType', { imageType })
+      .andWhere('image.url = :imageUrl', { imageUrl });
 
     return query.getOne();
+  }
+
+  /**
+   * Delete images that are no longer associated with the product
+   */
+  async deleteRemovedImages(productId: number, existingImageIds: number[]) {
+    // Get all images currently associated with the product
+    const allProductImages = await this.findImagesByEntity(
+      productId,
+      EntityTypeEnum.Product,
+    );
+
+    // Find images that should be deleted
+    const imagesToDelete = allProductImages.filter(
+      (img) => !existingImageIds.includes(img.id),
+    );
+
+    for (const image of imagesToDelete) {
+      const imagePath = path.join(this.uploadsDir, image.url);
+
+      // Delete file from the file system
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+
+      // Delete image record from database
+      await this.imageRepository.delete(image.id);
+    }
   }
 }

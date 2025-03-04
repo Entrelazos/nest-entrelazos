@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UniquenessValidationUtil } from 'src/util/uniqueness-validation.util';
 import { In, Repository, SelectQueryBuilder } from 'typeorm';
@@ -10,6 +14,7 @@ import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { ImageService } from 'src/image/image.service';
 import { CreateImageDto } from 'src/image/dto/create-image.dto';
 import { EntityTypeEnum, ImageTypeEnum } from 'src/image/image.types';
+import path from 'path';
 
 @Injectable()
 export class ProductService {
@@ -102,6 +107,7 @@ export class ProductService {
       category_ids,
       company_id,
       productDescription,
+      existingImages, // IDs of images that should be kept
       files,
       ...productData
     } = updateProductDto;
@@ -113,7 +119,7 @@ export class ProductService {
     });
 
     if (!product) {
-      throw new Error(`Product with ID ${id} not found`);
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
     // Find and validate categories
@@ -121,11 +127,9 @@ export class ProductService {
       const categories = await this.categoryRepository.findBy({
         id: In(category_ids),
       });
-
       if (categories.length !== category_ids.length) {
-        throw new Error('Some categories could not be found');
+        throw new BadRequestException('Some categories could not be found');
       }
-
       product.categories = categories;
     }
 
@@ -145,7 +149,10 @@ export class ProductService {
     // Save updated product
     const updatedProduct = await this.productRepository.save(product);
 
-    // Handle file updates (new images)
+    // Handle image deletions
+    await this.imageService.deleteRemovedImages(id, existingImages || []);
+
+    // Handle new image uploads
     if (files?.length) {
       for (const file of files) {
         const imageToUpload: CreateImageDto = {
