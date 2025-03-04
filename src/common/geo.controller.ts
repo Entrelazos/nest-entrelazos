@@ -5,7 +5,6 @@ import {
   Get,
   Param,
   Post,
-  Query,
 } from '@nestjs/common';
 import { GeoService } from './geo.service';
 import { CreateCityDTO } from './dto/city.dto';

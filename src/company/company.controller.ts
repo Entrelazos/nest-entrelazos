@@ -8,20 +8,20 @@ import {
   Param,
   Body,
   ParseIntPipe,
-  UseGuards,
+  // UseGuards,
   BadRequestException,
   Query,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { Company } from './entities/company.entity';
 import { CreateCompanyDto } from './dto/company.dto';
-import { AuthGuard } from '@nestjs/passport';
+// import { AuthGuard } from '@nestjs/passport';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { CreateCompanyAddressDto } from './dto/company-address.dto';
 import { CompanyAddress } from './entities/company-address.entity';
-import { RolesGuard } from 'src/guards/roles/roles.guard';
-import { Roles } from 'src/guards/roles/roles.decorator';
-import { Role } from 'src/types/role.types';
+// import { RolesGuard } from 'src/guards/roles/roles.guard';
+// import { Roles } from 'src/guards/roles/roles.decorator';
+// import { Role } from 'src/types/role.types';
 
 // @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('companies')
