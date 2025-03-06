@@ -96,18 +96,38 @@ export class ProductController {
     return this.productService.updateOne(id, { ...updateProductDto, files });
   }
 
-  @Patch(':id/approval')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
-  async updateApprovalStatus(
-    @Param('id') id: number,
-    @Body('status') status: ApprovalStatus,
-    @Req() req,
+  @Get('/products-status')
+  // @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'))
+  async getProductsByStatus(
+    @Query('status') status: ApprovalStatus,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('orderBy') orderBy = 'id',
+    @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
+  ): Promise<Pagination<Product>> {
+    try {
+      return this.productService.getProductsByStatus(
+        status,
+        page,
+        limit,
+        orderBy,
+        orderDirection,
+      );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Patch('/update-status')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(Role.Admin)
+  async updateProductStatuses(
+    @Body() body: { productIds: number[]; status: ApprovalStatus },
   ) {
-    return this.productService.updateApprovalStatus(
-      Number(id),
-      req.user.userId,
-      status,
+    return this.productService.updateMultipleProductStatuses(
+      body.productIds,
+      body.status,
     );
   }
 

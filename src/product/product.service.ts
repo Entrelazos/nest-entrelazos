@@ -15,7 +15,7 @@ import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { ImageService } from 'src/image/image.service';
 import { CreateImageDto } from 'src/image/dto/create-image.dto';
 import { EntityTypeEnum, ImageTypeEnum } from 'src/image/image.types';
-import { ApprovalStatus } from './product.types';
+import { ApprovalStatus, ApprovalType } from './product.types';
 import { User } from 'src/user/entities/user.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -222,6 +222,33 @@ export class ProductService {
     this.eventEmitter.emit('product.statusChanged', product);
 
     return product;
+  }
+
+  async getProductsByStatus(
+    status: ApprovalStatus,
+    page = 1,
+    limit = 10,
+    orderBy = 'id',
+    orderDirection: 'ASC' | 'DESC' = 'ASC',
+  ): Promise<Pagination<Product>> {
+    const options = { page, limit };
+    const queryBuilder: SelectQueryBuilder<Product> = this.productRepository
+      .createQueryBuilder('product')
+      .innerJoinAndSelect('product.company', 'company');
+    queryBuilder
+      .where('product.approval_status = :status', { status })
+      .orderBy(`product.${orderBy}`, orderDirection);
+
+    return await paginate<Product>(queryBuilder, options);
+  }
+
+  async updateMultipleProductStatuses(
+    productIds: number[],
+    status: ApprovalStatus,
+  ): Promise<void> {
+    await this.productRepository.update(productIds, {
+      approval_status: status,
+    });
   }
 
   async getProductsByCompany(
