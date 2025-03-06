@@ -17,6 +17,8 @@ import { CategoryModule } from './category/category.module';
 import { ImageModule } from './image/image.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { NotificationModule } from './notification/NotificationModule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -39,6 +41,7 @@ import { join } from 'path';
       },
       inject: [ConfigService],
     }),
+    EventEmitterModule.forRoot(),
     CommonModule,
     CompanyModule,
     UserModule,
@@ -47,6 +50,7 @@ import { join } from 'path';
     ProductModule,
     CategoryModule,
     ImageModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

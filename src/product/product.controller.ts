@@ -11,14 +11,20 @@ import {
   UploadedFiles,
   UseInterceptors,
   Put,
+  Patch,
+  Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ProductService } from './product.service';
-import { Product } from './entities/product.entity';
+import { ApprovalStatus, Product } from './entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Category } from 'src/category/entities/category.entity';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { CreateProductsDto, ProductDto } from './dto/product.dto';
+import { JwtAuthGuard } from 'src/guards/jwt/jwt-auth.guard';
+import { Roles } from 'src/guards/roles/roles.decorator';
+import { RolesGuard } from 'src/guards/roles/roles.guard';
+import { Role } from 'src/types/role.types';
 
 @Controller('products')
 export class ProductController {
@@ -80,7 +86,6 @@ export class ProductController {
       ...body,
       is_service: body.is_service === 'true', // Convert string to boolean
       is_public: body.is_public === 'true',
-      is_approved: body.is_approved === 'true',
       price: parseFloat(body.price), // Convert string to number
       company_id: parseInt(body.company_id, 10), // Convert string to integer
       category_ids: body.category_ids?.map((id: string) => parseInt(id, 10)), // Convert array of strings to numbers
@@ -89,6 +94,21 @@ export class ProductController {
     };
 
     return this.productService.updateOne(id, { ...updateProductDto, files });
+  }
+
+  @Patch(':id/approval')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async updateApprovalStatus(
+    @Param('id') id: number,
+    @Body('status') status: ApprovalStatus,
+    @Req() req,
+  ) {
+    return this.productService.updateApprovalStatus(
+      Number(id),
+      req.user.userId,
+      status,
+    );
   }
 
   @Get('/byCategory/:id')

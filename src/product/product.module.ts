@@ -9,6 +9,7 @@ import { Category } from 'src/category/entities/category.entity';
 import { ImageService } from 'src/image/image.service';
 import { Image } from 'src/image/entities/image.entity';
 import { User } from 'src/user/entities/user.entity';
+import { NotificationService } from 'src/notification/NotificationService';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { User } from 'src/user/entities/user.entity';
     UtilsModule,
   ],
   controllers: [ProductController],
-  providers: [ProductService, ImageService],
+  providers: [ProductService, ImageService, NotificationService],
 })
 export class ProductModule {}

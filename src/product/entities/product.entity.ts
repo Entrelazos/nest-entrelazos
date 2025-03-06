@@ -12,6 +12,7 @@ import { Category } from 'src/category/entities/category.entity';
 import { Company } from 'src/company/entities/company.entity';
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { ProductAttributes } from './product-attributes.entity';
+import { ApprovalStatus } from '../product.types';
 
 @Entity()
 export class Product extends BaseEntity {
@@ -30,8 +31,12 @@ export class Product extends BaseEntity {
   @Column()
   is_public: boolean;
 
-  @Column()
-  is_approved: boolean;
+  @Column({
+    type: 'enum',
+    enum: ApprovalStatus,
+    default: ApprovalStatus.PENDING,
+  })
+  approval_status: ApprovalStatus;
 
   @Column({
     type: 'float',
@@ -54,3 +59,4 @@ export class Product extends BaseEntity {
   })
   attributes: ProductAttributes;
 }
+export { ApprovalStatus };
