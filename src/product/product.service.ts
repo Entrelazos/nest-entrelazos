@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -14,7 +15,9 @@ import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { ImageService } from 'src/image/image.service';
 import { CreateImageDto } from 'src/image/dto/create-image.dto';
 import { EntityTypeEnum, ImageTypeEnum } from 'src/image/image.types';
-import path from 'path';
+import { ApprovalStatus, ApprovalType } from './product.types';
+import { User } from 'src/user/entities/user.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ProductService {
@@ -25,10 +28,13 @@ export class ProductService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly imageService: ImageService,
     // @InjectRepository(User) private userRepository: Repository<User>,
     // @InjectEntityManager() private readonly entityManager: EntityManager,
     private readonly uniquenessValidationUtil: UniquenessValidationUtil,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async findAll(): Promise<Product[]> {
@@ -57,6 +63,8 @@ export class ProductService {
         company_id,
         productDescription,
         files,
+        is_public,
+        is_service,
         ...productData
       } = createProductDto;
 
@@ -80,6 +88,9 @@ export class ProductService {
         product_description: productDescription, // Rename field
         categories, // Array of categories
         company,
+        is_public: String(is_public) === 'true',
+        is_service: String(is_service) === 'true',
+        approval_status: ApprovalStatus.PENDING,
       });
 
       // Save product
@@ -176,6 +187,68 @@ export class ProductService {
 
   async remove(id: number): Promise<void> {
     await this.productRepository.delete(id);
+  }
+
+  async updateApprovalStatus(
+    productId: number,
+    adminId: number,
+    status: ApprovalStatus,
+  ): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+    });
+
+    if (!product)
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+
+    // Ensure only admins can approve/reject products
+    const adminUser = await this.userRepository.findOne({
+      where: { id: adminId },
+      relations: ['roles'],
+    });
+
+    if (
+      !adminUser ||
+      !adminUser.roles.some((role) => role.role_name === 'admin')
+    ) {
+      throw new ForbiddenException(
+        'Only admins can change product approval status',
+      );
+    }
+
+    product.approval_status = status;
+    await this.productRepository.save(product);
+
+    this.eventEmitter.emit('product.statusChanged', product);
+
+    return product;
+  }
+
+  async getProductsByStatus(
+    status: ApprovalStatus,
+    page = 1,
+    limit = 10,
+    orderBy = 'id',
+    orderDirection: 'ASC' | 'DESC' = 'ASC',
+  ): Promise<Pagination<Product>> {
+    const options = { page, limit };
+    const queryBuilder: SelectQueryBuilder<Product> = this.productRepository
+      .createQueryBuilder('product')
+      .innerJoinAndSelect('product.company', 'company');
+    queryBuilder
+      .where('product.approval_status = :status', { status })
+      .orderBy(`product.${orderBy}`, orderDirection);
+
+    return await paginate<Product>(queryBuilder, options);
+  }
+
+  async updateMultipleProductStatuses(
+    productIds: number[],
+    status: ApprovalStatus,
+  ): Promise<void> {
+    await this.productRepository.update(productIds, {
+      approval_status: status,
+    });
   }
 
   async getProductsByCompany(

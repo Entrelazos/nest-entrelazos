@@ -7,7 +7,9 @@ import {
   IsArray,
   IsString,
   IsOptional,
+  IsEnum,
 } from 'class-validator';
+import { ApprovalStatus } from '../product.types';
 
 // Individual Product DTO
 export class ProductDto {
@@ -27,9 +29,8 @@ export class ProductDto {
   @IsBoolean()
   readonly is_public: boolean;
 
-  @IsNotEmpty()
-  @IsBoolean()
-  readonly is_approved: boolean;
+  @IsEnum(ApprovalStatus)
+  approval_status?: ApprovalStatus;
 
   @IsNotEmpty()
   @IsNumber()

@@ -11,14 +11,20 @@ import {
   UploadedFiles,
   UseInterceptors,
   Put,
+  Patch,
+  Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ProductService } from './product.service';
-import { Product } from './entities/product.entity';
+import { ApprovalStatus, Product } from './entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Category } from 'src/category/entities/category.entity';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { CreateProductsDto, ProductDto } from './dto/product.dto';
+import { JwtAuthGuard } from 'src/guards/jwt/jwt-auth.guard';
+import { Roles } from 'src/guards/roles/roles.decorator';
+import { RolesGuard } from 'src/guards/roles/roles.guard';
+import { Role } from 'src/types/role.types';
 
 @Controller('products')
 export class ProductController {
@@ -80,7 +86,6 @@ export class ProductController {
       ...body,
       is_service: body.is_service === 'true', // Convert string to boolean
       is_public: body.is_public === 'true',
-      is_approved: body.is_approved === 'true',
       price: parseFloat(body.price), // Convert string to number
       company_id: parseInt(body.company_id, 10), // Convert string to integer
       category_ids: body.category_ids?.map((id: string) => parseInt(id, 10)), // Convert array of strings to numbers
@@ -89,6 +94,41 @@ export class ProductController {
     };
 
     return this.productService.updateOne(id, { ...updateProductDto, files });
+  }
+
+  @Get('/products-status')
+  // @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'))
+  async getProductsByStatus(
+    @Query('status') status: ApprovalStatus,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('orderBy') orderBy = 'id',
+    @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
+  ): Promise<Pagination<Product>> {
+    try {
+      return this.productService.getProductsByStatus(
+        status,
+        page,
+        limit,
+        orderBy,
+        orderDirection,
+      );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Patch('/update-status')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(Role.Admin)
+  async updateProductStatuses(
+    @Body() body: { productIds: number[]; status: ApprovalStatus },
+  ) {
+    return this.productService.updateMultipleProductStatuses(
+      body.productIds,
+      body.status,
+    );
   }
 
   @Get('/byCategory/:id')
