@@ -89,25 +89,26 @@ export class CompanyService {
   }
 
   async findOneByName(name: string): Promise<Company> {
-    const company = await this.companyRepository.findOne({
-      where: { name },
-      relations: [
-        'addresses',
-        'addresses.city',
-        'addresses.city.region',
-        'addresses.city.region.country',
-        'products',
-        'users',
-        'users.user',
-        'social',
-      ],
-    });
+    const queryBuilder = this.companyRepository
+      .createQueryBuilder('company')
+      .leftJoinAndSelect('company.addresses', 'addresses')
+      .leftJoinAndSelect('addresses.city', 'city')
+      .leftJoinAndSelect('city.region', 'region')
+      .leftJoinAndSelect('region.country', 'country')
+      .leftJoinAndSelect('company.products', 'products')
+      .leftJoinAndSelect('company.users', 'users')
+      .leftJoinAndSelect('users.user', 'user')
+      .leftJoinAndSelect('company.social', 'social')
+      .leftJoinAndMapMany(
+        'company.images',
+        'image',
+        'images',
+        'images.entity_id = company.id AND images.entity_type = :entityType',
+        { entityType: 'company' },
+      )
+      .where({ name: name });
 
-    if (!company) {
-      throw new NotFoundException(`Company with name ${name} not found`);
-    }
-
-    return company;
+    return queryBuilder.getOne();
   }
 
   async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {

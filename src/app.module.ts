@@ -29,8 +29,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ...(process.env.NODE_ENV === 'development'
       ? [
           ServeStaticModule.forRoot({
-            rootPath: join(__dirname, '..', 'uploads'),
+            rootPath: join(process.cwd(), 'uploads'),
             serveRoot: '/uploads',
+            serveStaticOptions: { index: false, fallthrough: false },
           }),
         ]
       : []),

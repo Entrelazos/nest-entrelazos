@@ -8,7 +8,12 @@ import { Repository } from 'typeorm';
 import { Image } from './entities/image.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { CreateImageDto } from './dto/create-image.dto';
-import { EntityType, EntityTypeEnum, ImageType } from './image.types';
+import {
+  EntityType,
+  EntityTypeEnum,
+  ImageType,
+  ImageTypeEnum,
+} from './image.types';
 import { User } from 'src/user/entities/user.entity';
 import { Company } from 'src/company/entities/company.entity';
 import * as fs from 'fs';
@@ -17,9 +22,7 @@ import * as path from 'path';
 @Injectable()
 export class ImageService {
   private readonly uploadsDir =
-    process.env.NODE_ENV === 'development'
-      ? 'dist/uploads'
-      : '/var/www/uploads/';
+    process.env.NODE_ENV === 'development' ? 'uploads' : '/var/www/uploads/';
   constructor(
     @InjectRepository(Image)
     private imageRepository: Repository<Image>,
@@ -61,6 +64,7 @@ export class ImageService {
 
     const entityName = this.getEntityName(entity, entityType);
     const folderPath = path.join(
+      process.cwd(),
       this.uploadsDir,
       `${entityType}-images`,
       entityName,
@@ -71,11 +75,8 @@ export class ImageService {
     // Ensure the directory exists
     fs.mkdirSync(folderPath, { recursive: true });
 
-    // Save the file to the server
-    const fullPath = path.join(folderPath, imageName);
-    fs.writeFileSync(fullPath, file.buffer);
-
-    const imageUrl = path.join(
+    // Build the new image URL
+    const newImageUrl = path.join(
       `${entityType}-images`,
       entityName,
       entityId.toString(),
@@ -87,20 +88,36 @@ export class ImageService {
       entityId,
       entityType,
       imageType,
-      imageUrl,
     );
 
     if (foundImage) {
-      // Update the existing image
-      foundImage.url = imageUrl;
+      const oldImagePath = path.join(
+        process.cwd(),
+        this.uploadsDir,
+        foundImage.url,
+      );
+
+      // ✅ Delete previous image file from disk
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+        console.log(`Deleted old image: ${oldImagePath}`);
+      }
+
+      // ✅ Update existing image record
+      foundImage.url = newImageUrl;
       foundImage.alt_text = altText;
       foundImage.description = description;
-      foundImage.updated_at = new Date(); // Update timestamp
-      return this.imageRepository.save(foundImage); // Update the record
+      foundImage.updated_at = new Date();
+      fs.writeFileSync(path.join(folderPath, imageName), file.buffer); // Save new file
+      return this.imageRepository.save(foundImage);
     } else {
-      // Create a new image record
+      // ✅ Save new file to disk
+      const fullPath = path.join(folderPath, imageName);
+      fs.writeFileSync(fullPath, file.buffer);
+
+      // ✅ Create a new image record
       const newImage = this.imageRepository.create({
-        url: imageUrl,
+        url: newImageUrl,
         alt_text: altText,
         description,
         entity_id: entityId,
@@ -108,7 +125,7 @@ export class ImageService {
         image_type: imageType,
       });
 
-      return this.imageRepository.save(newImage); // Insert new record
+      return this.imageRepository.save(newImage);
     }
   }
 
@@ -228,8 +245,15 @@ export class ImageService {
     query
       .where('image.entity_id = :entityId', { entityId })
       .andWhere('image.entity_type = :entityType', { entityType })
-      .andWhere('image.image_type = :imageType', { imageType })
-      .andWhere('image.url = :imageUrl', { imageUrl });
+      .andWhere('image.image_type = :imageType', { imageType });
+
+    if (
+      imageUrl &&
+      imageType !== ImageTypeEnum.CompanyBanner &&
+      imageType !== ImageTypeEnum.CompanyProfile
+    ) {
+      query.andWhere('image.url = :imageUrl', { imageUrl });
+    }
 
     return query.getOne();
   }
@@ -250,7 +274,7 @@ export class ImageService {
     );
 
     for (const image of imagesToDelete) {
-      const imagePath = path.join(this.uploadsDir, image.url);
+      const imagePath = path.join(process.cwd(), this.uploadsDir, image.url);
 
       // Delete file from the file system
       if (fs.existsSync(imagePath)) {
