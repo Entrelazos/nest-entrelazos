@@ -64,7 +64,7 @@ export class ImageService {
 
     const entityName = this.getEntityName(entity, entityType);
     const folderPath = path.join(
-      process.cwd(),
+      process.env.NODE_ENV === 'development' ? process.cwd() : '',
       this.uploadsDir,
       `${entityType}-images`,
       entityName,
@@ -92,7 +92,7 @@ export class ImageService {
 
     if (foundImage) {
       const oldImagePath = path.join(
-        process.cwd(),
+        process.env.NODE_ENV === 'development' ? process.cwd() : '',
         this.uploadsDir,
         foundImage.url,
       );
@@ -274,7 +274,11 @@ export class ImageService {
     );
 
     for (const image of imagesToDelete) {
-      const imagePath = path.join(process.cwd(), this.uploadsDir, image.url);
+      const imagePath = path.join(
+        process.env.NODE_ENV === 'development' ? process.cwd() : '',
+        this.uploadsDir,
+        image.url,
+      );
 
       // Delete file from the file system
       if (fs.existsSync(imagePath)) {
