@@ -83,50 +83,55 @@ export class ImageService {
       imageName,
     );
 
-    // Check if the image already exists for the entity
-    const foundImage = await this.findOneImageByEntity(
-      entityId,
-      entityType,
-      imageType,
-    );
-
-    if (foundImage) {
-      const oldImagePath = path.join(
-        process.env.NODE_ENV === 'development' ? process.cwd() : '',
-        this.uploadsDir,
-        foundImage.url,
+    if (
+      entityType === EntityTypeEnum.Company &&
+      (imageType === ImageTypeEnum.CompanyProfile ||
+        imageType === ImageTypeEnum.CompanyBanner)
+    ) {
+      // Check if the image already exists for the entity
+      const foundImage = await this.findOneImageByEntity(
+        entityId,
+        entityType,
+        imageType,
       );
 
-      // ✅ Delete previous image file from disk
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
-        console.log(`Deleted old image: ${oldImagePath}`);
+      if (foundImage) {
+        const oldImagePath = path.join(
+          process.env.NODE_ENV === 'development' ? process.cwd() : '',
+          this.uploadsDir,
+          foundImage.url,
+        );
+
+        // ✅ Delete previous image file from disk
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+          console.log(`Deleted old image: ${oldImagePath}`);
+        }
+
+        // ✅ Update existing image record
+        foundImage.url = newImageUrl;
+        foundImage.alt_text = altText;
+        foundImage.description = description;
+        foundImage.updated_at = new Date();
+        fs.writeFileSync(path.join(folderPath, imageName), file.buffer); // Save new file
+        return this.imageRepository.save(foundImage);
       }
-
-      // ✅ Update existing image record
-      foundImage.url = newImageUrl;
-      foundImage.alt_text = altText;
-      foundImage.description = description;
-      foundImage.updated_at = new Date();
-      fs.writeFileSync(path.join(folderPath, imageName), file.buffer); // Save new file
-      return this.imageRepository.save(foundImage);
-    } else {
-      // ✅ Save new file to disk
-      const fullPath = path.join(folderPath, imageName);
-      fs.writeFileSync(fullPath, file.buffer);
-
-      // ✅ Create a new image record
-      const newImage = this.imageRepository.create({
-        url: newImageUrl,
-        alt_text: altText,
-        description,
-        entity_id: entityId,
-        entity_type: entityType,
-        image_type: imageType,
-      });
-
-      return this.imageRepository.save(newImage);
     }
+    // ✅ Save new file to disk
+    const fullPath = path.join(folderPath, imageName);
+    fs.writeFileSync(fullPath, file.buffer);
+
+    // ✅ Create a new image record
+    const newImage = this.imageRepository.create({
+      url: newImageUrl,
+      alt_text: altText,
+      description,
+      entity_id: entityId,
+      entity_type: entityType,
+      image_type: imageType,
+    });
+
+    return this.imageRepository.save(newImage);
   }
 
   private async getEntity(entityType: string, entityId: number): Promise<any> {
