@@ -16,6 +16,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+  app.setGlobalPrefix('api/v1');
   const config = new DocumentBuilder()
     .addBearerAuth()
     .setTitle('Entrelazos API')
