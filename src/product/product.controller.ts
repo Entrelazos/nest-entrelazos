@@ -30,6 +30,32 @@ import { Role } from 'src/types/role.types';
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  @Get()
+  async findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('orderBy') orderBy = 'product_name',
+    @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
+    @Query('search') search = '',
+    @Query('categoryIds') categoryIds: number[] = [],
+    @Query('companyId') companyId,
+  ): Promise<Pagination<Product>> {
+    try {
+      const options = {
+        page,
+        limit,
+        orderBy,
+        orderDirection,
+        search,
+        categoryIds,
+        companyId: companyId ? parseInt(companyId, 10) : undefined,
+      };
+      return await this.productService.findAll(options);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(AnyFilesInterceptor())
   @Post('bulk')
