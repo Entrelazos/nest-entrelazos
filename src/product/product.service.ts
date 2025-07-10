@@ -37,8 +37,56 @@ export class ProductService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async findAll(): Promise<Product[]> {
-    return this.productRepository.find();
+  async findAll(options: {
+    page: number;
+    limit: number;
+    orderBy: string;
+    orderDirection: 'ASC' | 'DESC';
+    search: string;
+    categoryIds: number[];
+    companyId?: number;
+  }): Promise<Pagination<Product>> {
+    const {
+      page,
+      limit,
+      orderBy,
+      orderDirection,
+      search,
+      categoryIds,
+      companyId,
+    } = options;
+
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.company', 'company')
+      .leftJoinAndSelect('product.categories', 'categories')
+      .leftJoinAndMapMany(
+        'product.images',
+        'image',
+        'images',
+        'images.entity_id = product.id AND images.entity_type = :entityType',
+        { entityType: 'product' },
+      );
+
+    if (search) {
+      queryBuilder.andWhere('product.product_name LIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    if (categoryIds.length > 0) {
+      queryBuilder.andWhere('categories.id IN (:...categoryIds)', {
+        categoryIds,
+      });
+    }
+
+    if (companyId) {
+      queryBuilder.andWhere('product.company_id = :companyId', { companyId });
+    }
+
+    queryBuilder.orderBy(`product.${orderBy}`, orderDirection);
+
+    return paginate<Product>(queryBuilder, { page, limit });
   }
 
   async findOne(id: number): Promise<Product> {
