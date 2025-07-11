@@ -60,20 +60,18 @@ export class ProductController {
   @UseInterceptors(AnyFilesInterceptor())
   @Post('bulk')
   async createMany(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files: Express.Multer.File[] = [],
     @Body() createProductsDto: CreateProductsDto,
   ): Promise<Product[]> {
     const { products } = createProductsDto;
 
-    // Organize files based on their structure
-    const productsWithFiles = products.map((product, index) => {
-      return {
-        ...product,
-        files: files.filter(
+    const productsWithFiles = products.map((product, index) => ({
+      ...product,
+      files:
+        files?.filter?.(
           (file) => file.fieldname === `products[${index}][files][]`,
-        ),
-      };
-    });
+        ) || [],
+    }));
 
     return this.productService.createMany(productsWithFiles);
   }
