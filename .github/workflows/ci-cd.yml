@@ -16,13 +16,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
+          cache: 'pnpm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies with pnpm
+        run: pnpm install
 
       - name: Run tests
-        run: npm test
+        run: pnpm test
 
   deploy:
     runs-on: ubuntu-latest
@@ -36,15 +40,15 @@ jobs:
           key: ${{ secrets.SSH_HOST_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_HOST_PASSPHRASE }}
           script: |
-            eval "$(ssh-agent -s)"
-            echo "Adding SSH key"
-            echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
-            cd nest-entrelazos
-            git pull origin master
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
-            npm install
-            npm run build
+            nvm use 20 || nvm install 20
+            cd nest-entrelazos
+            git pull origin master
+            echo "Installing pnpm..."
+            npm install -g pnpm
+            pnpm install
+            pnpm run build
             pm2 restart ecosystem.config.js --env production
         env:
           NODE_ENV: production
@@ -55,4 +59,3 @@ jobs:
           DB_DATABASE: entrelazos
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-
