@@ -43,6 +43,11 @@ jobs:
           key: ${{ secrets.SSH_HOST_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_HOST_PASSPHRASE }}
           script: |
+            eval "$(ssh-agent -s)"
+            echo "Adding SSH key"
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
+            cd nest-entrelazos
+            git pull origin master
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
             nvm use 20 || nvm install 20
