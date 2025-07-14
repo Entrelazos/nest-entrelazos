@@ -16,7 +16,4 @@ export class Role extends BaseEntity {
 
   @ManyToMany(() => User, (user) => user.roles)
   users: User[];
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
 }
