@@ -14,6 +14,7 @@ export const createDataSourceOptions = async (
     entities: ['dist/**/*.entity{.js,.ts}'],
     migrations: ['dist/db/migrations/*{.js,.ts}'],
     synchronize: true,
+    migrationsTableName: 'migrations_history',
   };
 };
 
