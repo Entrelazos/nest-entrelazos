@@ -180,8 +180,72 @@ export class CompanyService {
     id: number,
     updateCompanyDto: CreateCompanyDto,
   ): Promise<Company> {
-    await this.companyRepository.update(id, updateCompanyDto);
-    return this.companyRepository.findOne({ where: { id } });
+    const { name, nit, description, social, categoryIds, addresses } = updateCompanyDto;
+    
+    // Find the existing company
+    const existingCompany = await this.companyRepository.findOne({
+      where: { id },
+      relations: ['social', 'categories', 'addresses']
+    });
+    
+    if (!existingCompany) {
+      throw new NotFoundException(`Company with ID ${id} not found`);
+    }
+
+    // Update social entity if provided
+    if (social && existingCompany.social) {
+      await this.socialRepository.update(existingCompany.social.id, {
+        email: social.email,
+        phone_number: social.phone_number,
+        whatsapp: social.whatsapp,
+        facebook: social.facebook,
+        instagram: social.instagram,
+        linkedin: social.linkedin,
+        x: social.x
+      });
+    } else if (social && !existingCompany.social) {
+      const newSocial = this.socialRepository.create(social);
+      const savedSocial = await this.socialRepository.save(newSocial);
+      existingCompany.social = savedSocial;
+    }
+
+    // Update categories if provided
+    if (categoryIds && categoryIds.length > 0) {
+      const categories = await this.categoriesRepository.findBy({
+        id: In(categoryIds),
+      });
+      if (categories.length !== categoryIds.length) {
+        throw new Error('Some categories not found');
+      }
+      existingCompany.categories = categories;
+    }
+
+    // Update basic company fields
+    existingCompany.name = name || existingCompany.name;
+    existingCompany.nit = nit || existingCompany.nit;
+    existingCompany.description = description || existingCompany.description;
+
+    const updatedCompany = await this.companyRepository.save(existingCompany);
+
+    // Update addresses if provided
+    if (addresses && addresses.length > 0) {
+      // Remove existing addresses
+      if (existingCompany.addresses && existingCompany.addresses.length > 0) {
+        await this.companyAddressRepository.delete({ company: { id } });
+      }
+
+      // Create new addresses using the saved company
+      const companyAddresses = addresses.map((addressData) =>
+        this.companyAddressRepository.create({
+          ...addressData,
+          company: updatedCompany,
+        }),
+      );
+
+      // Save new addresses
+      await this.companyAddressRepository.save(companyAddresses);
+    }
+    return this.findOneByName(updatedCompany.name);
   }
 
   async remove(id: number): Promise<void> {
