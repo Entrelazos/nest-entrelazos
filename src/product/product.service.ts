@@ -312,6 +312,7 @@ export class ProductService {
 
     queryBuilder
       .where('product.company_id = :companyId', { companyId })
+      .andWhere('product.approval_status = :status', { status: ApprovalStatus.APPROVED })
       .orderBy(`product.${orderBy}`, orderDirection);
 
     return await paginate<Product>(queryBuilder, options);
